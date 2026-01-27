@@ -1,0 +1,248 @@
+---
+description: "AI 어시스턴트가 코드 작업 시 반드시 준수해야 하는 최상위 규칙"
+alwaysApply: true
+---
+
+# AI Assistant Rules (최상위 규칙)
+
+> 이 규칙은 모든 코드 작업에 우선적으로 적용되는 최상위 규칙입니다.
+
+**📌 이 룰을 언제 읽어야 하나요?**
+- ✅ 완전히 새로운 대화 시작 시
+- ✅ 컨텍스트 윈도우가 리셋되어 새로 시작할 때
+- ✅ MCP 도구 사용법을 확인하고 싶을 때
+- ✅ Context7으로 라이브러리 문서를 참조해야 할 때
+- ❌ 같은 컨텍스트 내에서 매번 작업할 때마다 (토큰 낭비)
+
+## MCP 도구 사용 원칙
+
+### 1. Serena MCP 우선 사용 (필수)
+모든 파일 및 코드 작업 시 **Serena MCP 도구를 최우선**으로 사용해야 합니다.
+
+
+#### 파일 읽기/검색
+- ❌ `read_file` 대신 → ✅ `mcp_serena_read_file`
+- ❌ `grep` 대신 → ✅ `mcp_serena_search_for_pattern`
+- ❌ `list_dir` 대신 → ✅ `mcp_serena_list_dir`
+- ❌ `glob_file_search` 대신 → ✅ `mcp_serena_find_file`
+
+#### 파일 수정
+- ❌ `search_replace` 대신 → ✅ `mcp_serena_replace_regex`
+- ❌ `write` 대신 → ✅ `mcp_serena_create_text_file`
+
+#### 심볼 기반 작업 (클래스, 메서드 등)
+- ✅ `mcp_serena_get_symbols_overview` - 파일의 심볼 구조 파악
+- ✅ `mcp_serena_find_symbol` - 클래스/메서드 검색
+- ✅ `mcp_serena_replace_symbol_body` - 메서드/클래스 본문 교체
+- ✅ `mcp_serena_insert_after_symbol` - 심볼 뒤에 코드 추가
+- ✅ `mcp_serena_insert_before_symbol` - 심볼 앞에 코드 추가
+- ✅ `mcp_serena_find_referencing_symbols` - 심볼 참조 찾기
+
+#### 명령 실행
+- ❌ `run_terminal_cmd` 대신 → ✅ `mcp_serena_execute_shell_command`
+
+**예외 상황**: Serena MCP로 불가능한 특수한 경우에만 기존 도구 사용
+
+### 2. Context7 MCP 적극 활용
+외부 라이브러리 및 프레임워크 사용 시 **Context7 MCP를 통해 최신 문서를 참조**해야 합니다.
+
+#### 사용 시점
+- 프레임워크 사용 시
+- 외부 라이브러리 통합 시
+- API 사용법이 불확실할 때
+- 최신 버전의 Best Practice 확인 시
+
+#### 사용 방법
+1. `mcp_context7_resolve-library-id` - 라이브러리 ID 확인
+2. `mcp_context7_get-library-docs` - 해당 라이브러리 문서 가져오기
+
+
+## 금지 사항
+
+### ❌ 절대 하지 말아야 할 것
+1. **일반 도구 우선 사용** - Serena MCP 도구를 먼저 고려하지 않고 일반 도구를 사용하는 것
+2. **Context7 없이 라이브러리 추측** - 외부 라이브러리 사용법을 추측으로 작성하는 것
+3. **수동 파일 편집** - 심볼 단위 작업이 가능한데 전체 파일을 교체하는 것
+4. **정규식 없이 긴 문자열 매칭** - replace 시 불필요하게 긴 old_string 사용
+
+## 작업 우선순위
+
+### 우선순위 1: Serena MCP 심볼 기반 작업
+- 클래스, 메서드 단위로 작업 가능
+- 정확한 위치 지정
+- 실수 최소화
+
+### 우선순위 2: Serena MCP 정규식 작업
+- 패턴 기반 수정
+- 여러 곳 동시 수정
+- 효율적인 텍스트 처리
+
+### 우선순위 3: 일반 도구 (최후의 수단)
+- Serena MCP로 불가능한 경우만
+- 특수한 파일 포맷 처리
+- IDE 특화 기능
+
+## 코드 아키텍처 규칙
+
+### 📦 컴포넌트 기반 개발 (필수)
+
+모든 페이지는 **반드시 컴포넌트화**하여 개발해야 합니다.
+
+#### 단일 파일 크기 제한
+- ✅ 메인 페이지: **300줄 이하**
+- ✅ 컴포넌트: **200줄 이하**
+- ✅ 커스텀 훅: **150줄 이하**
+- ✅ 유틸/타입 파일: **100줄 이하**
+- ❌ 500줄 이상의 단일 파일 생성 금지
+
+#### 필수 디렉토리 구조
+새로운 페이지/기능 개발 시 다음 구조를 따라야 합니다:
+
+```
+[feature]/
+├── page.tsx                # 메인 페이지 (오케스트레이션만, 300줄 이하)
+├── components/             # 기능별 전용 컴포넌트
+│   ├── [feature]-card.tsx
+│   ├── [feature]-list.tsx
+│   ├── [feature]-modal.tsx
+│   └── ...
+├── hooks/                  # 커스텀 훅 (비즈니스 로직)
+│   ├── use-[feature]-data.ts    # 데이터 로딩
+│   ├── use-[feature]-actions.ts # CRUD 액션
+│   └── ...
+└── lib/                    # 타입, 상수, 유틸
+    ├── [feature]-types.ts
+    ├── [feature]-constants.ts
+    └── [feature]-utils.ts
+```
+
+#### 공통 컴포넌트 우선 사용 (🚨 필수)
+
+**새로운 컴포넌트를 개발하기 전에 반드시 기존 공통 컴포넌트를 먼저 확인해야 합니다!**
+
+##### 개발 전 체크리스트 (🚨 필수)
+
+**컴포넌트 개발 시 반드시 따라야 할 순서:**
+
+1. ✅ **기존 공통 컴포넌트 확인**
+   - `src/components/ui/` 디렉토리 확인
+   - `src/components/shared/` 디렉토리 확인
+   - 유사한 기능이 이미 있는지 검색
+
+2. ✅ **재사용 가능성 판단**
+   - 이 컴포넌트가 2개 이상의 페이지에서 사용될 가능성이 있는가?
+   - 유사한 UI/로직이 다른 곳에 있는가?
+
+3. ✅ **적절한 위치 선택**
+   - **이미 공통 컴포넌트 존재** → 기존 컴포넌트 재사용 또는 확장
+   - **2개 이상 페이지에서 사용** → `src/components/shared/`에 생성
+   - **범용 UI 컴포넌트** → `src/components/ui/`에 생성
+   - **단일 페이지 전용** → `[feature]/components/`에 생성
+
+4. ✅ **Props 설계**
+   - 공통 컴포넌트는 props로 커스터마이징 가능하도록 설계
+   - 확장 가능성을 고려한 유연한 인터페이스
+
+##### 공통화 기준
+
+| 상황 | 위치 | 예시 |
+|------|------|------|
+| 범용 UI 요소 | `ui/` | button, dialog, input |
+| 2개 이상 페이지에서 사용 | `shared/` | empty-state, organization-user-selector |
+| 레이아웃 관련 | `layout/` | sidebar, header |
+| 단일 페이지 전용 | `[feature]/components/` | user-card, project-form-modal |
+
+##### 나쁜 예시 ❌
+
+```typescript
+// users/components/user-empty-state.tsx
+export function UserEmptyState() {
+  return <div>검색 결과가 없습니다</div>;
+}
+
+// projects/components/project-empty-state.tsx
+export function ProjectEmptyState() {
+  return <div>검색 결과가 없습니다</div>;
+}
+```
+→ 중복! `shared/empty-state.tsx`를 사용해야 함
+
+##### 좋은 예시 ✅
+
+```typescript
+// src/components/shared/empty-state.tsx
+export function EmptyState({ icon, title, description }) {
+  return (
+    <div>
+      <Icon />
+      <h3>{title}</h3>
+      <p>{description}</p>
+    </div>
+  );
+}
+
+// users/page.tsx
+import { EmptyState } from "@/components/shared/empty-state";
+<EmptyState icon={Users} title="검색 결과가 없습니다" />
+
+// projects/page.tsx
+import { EmptyState } from "@/components/shared/empty-state";
+<EmptyState icon={FolderOpen} title="검색 결과가 없습니다" />
+```
+
+#### 컴포넌트화 원칙
+
+1. **단일 책임 원칙**
+   - 각 컴포넌트는 하나의 역할만 수행
+   - UI 로직과 비즈니스 로직 분리 (커스텀 훅)
+
+2. **계층적 분리**
+   - `components/` - 순수 UI 컴포넌트 (props 기반)
+   - `hooks/` - 상태 관리 & 비즈니스 로직
+   - `lib/` - 타입, 상수, 순수 함수
+
+3. **재사용성**
+   - 공통 컴포넌트는 상위 디렉토리에 배치
+   - props를 통한 커스터마이징 지원
+
+4. **테스트 가능성**
+   - 각 컴포넌트/훅을 독립적으로 테스트 가능하도록 설계
+   - 외부 의존성 최소화
+
+#### 컴포넌트화 예시
+
+❌ **나쁜 예**: 1500줄 단일 파일
+```typescript
+// page.tsx (1500줄)
+export default function MassivePage() {
+  // 모든 로직이 한 파일에...
+}
+```
+
+✅ **좋은 예**: 컴포넌트화
+```typescript
+// page.tsx (250줄)
+import { useFeatureData } from "./hooks/use-feature-data";
+import { useFeatureActions } from "./hooks/use-feature-actions";
+import { FeatureHeader } from "./components/feature-header";
+import { FeatureList } from "./components/feature-list";
+
+export default function FeaturePage() {
+  const { data } = useFeatureData();
+  const { handleCreate } = useFeatureActions();
+  
+  return (
+    <div>
+      <FeatureHeader onCreateClick={handleCreate} />
+      <FeatureList data={data} />
+    </div>
+  );
+}
+```
+
+#### 리팩토링 기준
+기존 파일이 다음 조건을 만족하면 **즉시 리팩토링** 필요:
+- 500줄 이상
+- 3개 이상의 useState
+- 5개 이상의 함수
+- 여러 가지 책임을 가진 경우

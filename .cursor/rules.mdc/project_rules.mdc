@@ -1,0 +1,46 @@
+---
+alwaysApply: true
+---
+
+# Project Rules
+- Framework: Next.js 14+ (App Router)
+- Language: TypeScript (Strict mode)
+- Styling: Tailwind CSS
+- Database: PostgreSQL with Drizzle ORM
+- API Pattern: Next.js Server Actions (No API Routes)
+- State Management: Zustand
+- Components: Use Functional Components, shadcn/ui pattern
+
+# Code Style
+- Use `interface` for type definitions.
+- Always use 'use server' at the top of Server Action files.
+- Use `lucide-react` for icons.
+- Prefer `async/await` over `.then`.
+- When writing DB queries, strictly follow the schema defined in `src/db/schema.ts`.
+
+# Database Schema Rules
+- **BEFORE** modifying `src/db/schema.ts`, ALWAYS read `docs/schemas.md` first to understand current table structures.
+- **AFTER** modifying `src/db/schema.ts`, ALWAYS update `docs/schemas.md` to reflect the changes.
+- Schema documentation (`docs/schemas.md`) must stay in sync with the actual schema file.
+
+# Project Structure (Updated)
+/src
+  /app
+    /(auth)               # Public Layout (No Sidebar)
+      /login
+      /register
+    /(dashboard)          # Protected Layout (Has Sidebar & Header)
+      /layout.tsx         # ★ Sidebar & Header Implementation here
+      /page.tsx           # Main Home (Overall Summary)
+      /projects           # Project Management List
+        /page.tsx         # List of projects
+        /[id]             # Specific Project Detail
+          /board          # ★ Kanban Board is here (/projects/1/board)
+          /settings       # Project Settings
+      /statistics         # Statistics & Analytics Page
+  /components
+    /layout
+      - sidebar.tsx       # Common Sidebar
+      - header.tsx        # Common Header
+    /charts               # For Statistics
+    /kanban               # For Board
