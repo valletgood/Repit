@@ -47,16 +47,16 @@ pnpm dev
 
 ## 스크립트
 
-| 명령어 | 설명 |
-|--------|------|
-| `pnpm dev` | 개발 서버 실행 |
-| `pnpm build` | 프로덕션 빌드 |
-| `pnpm start` | 프로덕션 서버 실행 |
-| `pnpm lint` | ESLint 실행 |
+| 명령어             | 설명                      |
+| ------------------ | ------------------------- |
+| `pnpm dev`         | 개발 서버 실행            |
+| `pnpm build`       | 프로덕션 빌드             |
+| `pnpm start`       | 프로덕션 서버 실행        |
+| `pnpm lint`        | ESLint 실행               |
 | `pnpm db:generate` | Drizzle 마이그레이션 생성 |
-| `pnpm db:migrate` | 마이그레이션 적용 |
-| `pnpm db:push` | 스키마를 DB에 직접 푸시 |
-| `pnpm db:studio` | Drizzle Studio 실행 |
+| `pnpm db:migrate`  | 마이그레이션 적용         |
+| `pnpm db:push`     | 스키마를 DB에 직접 푸시   |
+| `pnpm db:studio`   | Drizzle Studio 실행       |
 
 ## 프로젝트 구조
 
