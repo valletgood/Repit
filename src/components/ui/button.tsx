@@ -9,18 +9,21 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+        default:
+          'bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80',
         destructive:
-          'bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60',
+          'bg-destructive text-white hover:bg-destructive/90 active:bg-destructive/80 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60',
         outline:
-          'border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50',
-        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-        ghost: 'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
-        link: 'text-primary underline-offset-4 hover:underline',
+          'border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground active:bg-accent/80 dark:bg-input/30 dark:border-input dark:hover:bg-input/50',
+        secondary:
+          'bg-secondary text-secondary-foreground hover:bg-secondary/80 active:bg-secondary/70',
+        ghost:
+          'hover:bg-accent hover:text-accent-foreground active:bg-accent/80 dark:hover:bg-accent/50',
+        link: 'text-primary underline-offset-4 hover:underline active:opacity-80',
         authPrimary:
-          'rounded-[80px] border border-[#F04444] text-foreground shadow-[0px_6px_16px_rgba(227,27,35,0.35)] bg-[linear-gradient(90deg,#8B0F14_0%,#C4161C_45%,#E31B23_100%)] hover:opacity-90',
+          'rounded-[80px] border border-[#F04444] text-foreground shadow-[0px_6px_16px_rgba(227,27,35,0.35)] bg-[linear-gradient(90deg,#8B0F14_0%,#C4161C_45%,#E31B23_100%)] hover:opacity-90 active:opacity-80 active:shadow-[0px_2px_8px_rgba(227,27,35,0.25)]',
         authSecondary:
-          'rounded-[80px] border border-[#3A3A3A] bg-[linear-gradient(90deg,#1F1F1F_0%,#414141_100%)] text-foreground hover:opacity-90',
+          'rounded-[80px] border border-[#3A3A3A] bg-[linear-gradient(90deg,#1F1F1F_0%,#414141_100%)] text-foreground hover:opacity-90 active:opacity-80 active:border-[#4A4A4A]',
       },
       size: {
         default: 'h-9 px-4 py-2 has-[>svg]:px-3',
