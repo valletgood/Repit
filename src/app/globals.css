@@ -1,6 +1,6 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
-@source "../../node_modules/tw-animate-css/dist/tw-animate.css";
+@source '../../node_modules/tw-animate-css/dist/tw-animate.css';
 
 @custom-variant dark (&:is(.dark, .dark *));
 
@@ -141,7 +141,8 @@ body {
 }
 
 @keyframes pulse-glow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 20px rgba(34, 211, 238, 0.3);
   }
   50% {
