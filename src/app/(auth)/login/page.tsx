@@ -4,11 +4,25 @@ import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [showError, setShowError] = useState(false);
+  const router = useRouter();
+  const handleId = (value: string) => {
+    setId(value);
+  }
+
+  const handlePassword = (value: string) => {
+    setPassword(value);
+  }
+
+  const moveToRegister = () => {
+    router.push('/register');
+  }
+
 
   return (
     <main className="flex min-h-screen w-full flex-col items-center bg-[#2a2a2a] px-8 pt-12">
@@ -40,7 +54,7 @@ export default function LoginPage() {
                   variant="auth"
                   inputSize="lg"
                   value={id}
-                  onChange={(e) => setId(e.target.value)}
+                  onChange={(e) => handleId(e.target.value)}
                   placeholder="아이디를 입력해 주세요."
                   className="bg-input text-foreground placeholder:text-muted-foreground pl-12"
                 />
@@ -66,7 +80,7 @@ export default function LoginPage() {
                   variant="auth"
                   inputSize="lg"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => handlePassword(e.target.value)}
                   placeholder="비밀번호를 입력해 주세요."
                   className="bg-input text-foreground placeholder:text-muted-foreground pl-12"
                 />
@@ -87,12 +101,12 @@ export default function LoginPage() {
             {/* 버튼 영역 */}
             <div className="mt-10 flex flex-col gap-3">
               {/* 로그인 버튼 */}
-              <Button type="submit" size="auth" variant="authPrimary" className="w-full">
+              <Button type="submit" size="auth" variant="authPrimary" className="w-full" disabled={id === '' || password === ''}>
                 로그인
               </Button>
 
               {/* 회원가입 버튼 */}
-              <Button type="button" size="auth" variant="authSecondary" className="w-full">
+              <Button type="button" size="auth" variant="authSecondary" className="w-full" onClick={moveToRegister}>
                 회원가입
               </Button>
             </div>
