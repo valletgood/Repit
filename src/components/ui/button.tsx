@@ -17,12 +17,17 @@ const buttonVariants = cva(
         secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
         ghost: 'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
         link: 'text-primary underline-offset-4 hover:underline',
+        authPrimary:
+          'rounded-[80px] border border-[#F04444] text-foreground shadow-[0px_6px_16px_rgba(227,27,35,0.35)] bg-[linear-gradient(90deg,#8B0F14_0%,#C4161C_45%,#E31B23_100%)] hover:opacity-90',
+        authSecondary:
+          'rounded-[80px] border border-[#3A3A3A] bg-[linear-gradient(90deg,#1F1F1F_0%,#414141_100%)] text-foreground hover:opacity-90',
       },
       size: {
         default: 'h-9 px-4 py-2 has-[>svg]:px-3',
         sm: 'h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5',
         lg: 'h-10 rounded-md px-6 has-[>svg]:px-4',
         icon: 'size-9',
+        auth: 'h-[43px]',
         'icon-sm': 'size-8',
         'icon-lg': 'size-10',
       },
