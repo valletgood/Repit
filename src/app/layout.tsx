@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Space_Grotesk, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
+import QueryProvider from '@/components/providers/QueryProvider';
 
 const spaceGrotesk = Space_Grotesk({
   variable: '--font-sans',
@@ -32,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="ko" className="dark">
       <body className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased`}>
-        {children}
+        <QueryProvider>{children}</QueryProvider>
       </body>
     </html>
   );
