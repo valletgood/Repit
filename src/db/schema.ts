@@ -1,49 +1,43 @@
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { pgTable, text, integer, real, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 // 사용자 테이블
-export const users = sqliteTable('users', {
-  id: text('id').primaryKey(),
-  email: text('email').notNull().unique(),
+export const users = pgTable('users', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id').notNull().unique(), // 로그인용 아이디
   name: text('name').notNull(),
-  createdAt: integer('created_at', { mode: 'timestamp' })
-    .notNull()
-    .$defaultFn(() => new Date()),
-  updatedAt: integer('updated_at', { mode: 'timestamp' })
-    .notNull()
-    .$defaultFn(() => new Date()),
+  password: text('password').notNull(),
+  gender: text('gender').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
 // 운동 종류 테이블
-export const exercises = sqliteTable('exercises', {
-  id: text('id').primaryKey(),
+export const exercises = pgTable('exercises', {
+  id: uuid('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
   category: text('category').notNull(), // 예: "가슴", "등", "어깨", "하체", "팔", "복근", "유산소"
   description: text('description'),
-  createdAt: integer('created_at', { mode: 'timestamp' })
-    .notNull()
-    .$defaultFn(() => new Date()),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
 // 운동 세션 테이블 (하루 운동 기록)
-export const workoutSessions = sqliteTable('workout_sessions', {
-  id: text('id').primaryKey(),
-  userId: text('user_id')
+export const workoutSessions = pgTable('workout_sessions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
-  date: integer('date', { mode: 'timestamp' }).notNull(),
+  date: timestamp('date').notNull(),
   notes: text('notes'),
-  createdAt: integer('created_at', { mode: 'timestamp' })
-    .notNull()
-    .$defaultFn(() => new Date()),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
 // 운동 세트 테이블 (각 운동의 세트 기록)
-export const workoutSets = sqliteTable('workout_sets', {
-  id: text('id').primaryKey(),
-  sessionId: text('session_id')
+export const workoutSets = pgTable('workout_sets', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  sessionId: uuid('session_id')
     .notNull()
     .references(() => workoutSessions.id, { onDelete: 'cascade' }),
-  exerciseId: text('exercise_id')
+  exerciseId: uuid('exercise_id')
     .notNull()
     .references(() => exercises.id),
   setNumber: integer('set_number').notNull(),
@@ -51,9 +45,7 @@ export const workoutSets = sqliteTable('workout_sets', {
   reps: integer('reps'), // 반복 횟수
   duration: integer('duration'), // 초 단위 (유산소 운동용)
   distance: real('distance'), // km 단위 (유산소 운동용)
-  createdAt: integer('created_at', { mode: 'timestamp' })
-    .notNull()
-    .$defaultFn(() => new Date()),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
 // 타입 내보내기
