@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axiosInstance from '@/lib/axios';
 
 interface CheckIdResponse {
   available: boolean;
@@ -6,6 +6,8 @@ interface CheckIdResponse {
 }
 
 export const checkIdAvailability = async (userId: string): Promise<CheckIdResponse> => {
-  const response = await axios.get(`/api/auth/check-id?userId=${encodeURIComponent(userId)}`);
+  const response = await axiosInstance.get(
+    `/api/auth/check-id?userId=${encodeURIComponent(userId)}`
+  );
   return response.data;
 };

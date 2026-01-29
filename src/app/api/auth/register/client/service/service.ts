@@ -1,7 +1,7 @@
 import { NewUser } from '@/db/schema';
-import axios from 'axios';
+import axiosInstance from '@/lib/axios';
 
 export const register = async (payload: NewUser) => {
-  const response = await axios.post('/api/auth/register', payload);
+  const response = await axiosInstance.post('/api/auth/register', payload);
   return response.data;
 };
