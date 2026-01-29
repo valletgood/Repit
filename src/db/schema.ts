@@ -13,9 +13,11 @@ export const users = pgTable('users', {
 
 // 운동 종류 테이블
 export const exercises = pgTable('exercises', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  excerciseId: uuid('excercise_id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
-  category: text('category').notNull(), // 예: "가슴", "등", "어깨", "하체", "팔", "복근", "유산소"
+  mainCategory: text('category').notNull(), // 예: "가슴", "등", "어깨", "하체", "팔", "복근", "유산소"
+  subCategory: text('sub_category'), // 예: "벤치 프레스", "덤벨 프레스", "시티드 덤벨 숄더 프레스"
+  equipment: text('equipment').notNull(), // 예: "바벨", "덤벨", "머신", "케이블", "맨몸", "유산소"
   description: text('description'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
@@ -39,7 +41,7 @@ export const workoutSets = pgTable('workout_sets', {
     .references(() => workoutSessions.id, { onDelete: 'cascade' }),
   exerciseId: uuid('exercise_id')
     .notNull()
-    .references(() => exercises.id),
+    .references(() => exercises.excerciseId),
   setNumber: integer('set_number').notNull(),
   weight: real('weight'), // kg 단위
   reps: integer('reps'), // 반복 횟수
@@ -67,7 +69,7 @@ export const routineExercises = pgTable('routine_exercises', {
     .references(() => routines.id, { onDelete: 'cascade' }),
   exerciseId: uuid('exercise_id')
     .notNull()
-    .references(() => exercises.id),
+    .references(() => exercises.excerciseId),
   order: integer('order').notNull(), // 운동 순서
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
