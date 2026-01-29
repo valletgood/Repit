@@ -8,8 +8,10 @@ interface MainLayoutProps {
 export default function MainLayout({ children }: MainLayoutProps) {
   return (
     <AuthGuard>
-      <div className="pb-16">{children}</div>
-      <BottomNav />
+      <div className="flex h-full flex-col overflow-hidden">
+        <div className="flex-1 overflow-hidden pb-16">{children}</div>
+        <BottomNav />
+      </div>
     </AuthGuard>
   );
 }
