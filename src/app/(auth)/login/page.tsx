@@ -55,7 +55,7 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="flex min-h-screen w-full flex-col items-center bg-[#2a2a2a] px-8 pt-12">
+    <main className="flex min-h-screen w-full flex-col items-center bg-[#1A1A1A] px-8 pt-12">
       {/* 콘텐츠 */}
       <div className="flex w-full flex-col items-center">
         {/* 로고 영역 */}
