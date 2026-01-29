@@ -169,7 +169,7 @@ body {
 
 .dark {
   /* 피그마 색상 팔레트 */
-  --background: #2b2b2b;
+  --background: #1a1a1a;
   /* 피그마 배경 그라데이션 */
   --background-base: linear-gradient(180deg, #1a1a1a 0%, #121212 45%, #0e0e0e 100%);
   --background-noise: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
@@ -238,4 +238,14 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* 스크롤바 숨기기 유틸리티 */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE, Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
