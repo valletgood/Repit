@@ -11,6 +11,7 @@ import { useRegister } from '@/app/api/auth/register/client/hooks/useRegister';
 import { useCheckId } from '@/app/api/auth/check-id/client/hooks/useCheckId';
 import { toast } from 'sonner';
 
+// todo: react-hook-form 적용
 export default function RegisterPage() {
   const [name, setName] = useState('');
   const [id, setId] = useState('');
@@ -212,7 +213,7 @@ export default function RegisterPage() {
             {/* PASSWORD 입력 */}
             <div className="flex flex-col gap-2">
               <label htmlFor="password" className="text-foreground-muted text-sm font-medium">
-                비밀번호
+                PASSWORD
               </label>
               <div className="relative">
                 <Image
@@ -241,7 +242,7 @@ export default function RegisterPage() {
                 htmlFor="passwordConfirm"
                 className="text-foreground-muted text-sm font-medium"
               >
-                비밀번호 확인
+                PASSWORD CHECK
               </label>
               <div className="relative">
                 <Image
@@ -319,7 +320,7 @@ export default function RegisterPage() {
               <Button
                 type="button"
                 size="auth"
-                variant="authPrimary"
+                variant="authSecondary"
                 className="w-full"
                 disabled={!isFormValid()}
                 onClick={handleClickRegister}
