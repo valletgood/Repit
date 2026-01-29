@@ -1,13 +1,15 @@
 'use client';
 
 import { Input } from '@/components/ui/input';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useRegister } from '@/app/api/auth/register/client/hooks/useRegister';
+import { useCheckId } from '@/app/api/auth/check-id/client/hooks/useCheckId';
+import { toast } from 'sonner';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -16,9 +18,12 @@ export default function RegisterPage() {
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [gender, setGender] = useState('');
   const [error, setError] = useState('');
+  const [idError, setIdError] = useState('');
+  const [isIdAvailable, setIsIdAvailable] = useState<boolean | null>(null);
   const router = useRouter();
 
   const { mutate: register } = useRegister();
+  const { mutate: checkId, isPending: isCheckingId } = useCheckId();
 
   const handleName = (value: string) => {
     setName(value);
@@ -26,6 +31,32 @@ export default function RegisterPage() {
 
   const handleId = (value: string) => {
     setId(value);
+    // 입력 시 이전 검증 결과 초기화
+    setIsIdAvailable(null);
+    setIdError('');
+  };
+
+  const handleIdBlur = () => {
+    if (!id.trim()) {
+      setIdError('');
+      setIsIdAvailable(null);
+      return;
+    }
+
+    checkId(id, {
+      onSuccess: (response) => {
+        setIsIdAvailable(response.available);
+        if (!response.available) {
+          setIdError(response.message);
+        } else {
+          setIdError('');
+        }
+      },
+      onError: () => {
+        setIdError('아이디 확인 중 오류가 발생했습니다.');
+        setIsIdAvailable(null);
+      },
+    });
   };
 
   const handlePassword = (value: string) => {
@@ -53,7 +84,15 @@ export default function RegisterPage() {
   };
 
   const isFormValid = () => {
-    return name && id && password && passwordConfirm && gender && password === passwordConfirm;
+    return (
+      name &&
+      id &&
+      password &&
+      passwordConfirm &&
+      gender &&
+      password === passwordConfirm &&
+      isIdAvailable === true
+    );
   };
 
   const handleClickRegister = async () => {
@@ -82,6 +121,7 @@ export default function RegisterPage() {
         {
           onSuccess: (response) => {
             console.log(response);
+            toast.success('회원가입이 완료되었습니다.');
             router.push('/login');
           },
           onError: (error) => {
@@ -152,10 +192,21 @@ export default function RegisterPage() {
                   inputSize="lg"
                   value={id}
                   onChange={(e) => handleId(e.target.value)}
+                  onBlur={handleIdBlur}
                   placeholder="아이디를 입력해 주세요."
                   className="bg-input text-foreground placeholder:text-muted-foreground pl-12"
                 />
               </div>
+              {isCheckingId && <p className="text-muted-foreground text-sm">확인 중...</p>}
+              {idError && (
+                <div className="flex items-center gap-2">
+                  <Image src="/images/icon_warning.svg" alt="Error" width={16} height={16} />
+                  <p className="text-sm font-medium text-[#CE0000]">{idError}</p>
+                </div>
+              )}
+              {isIdAvailable === true && !idError && (
+                <p className="text-sm font-medium text-[#00C853]">사용 가능한 아이디입니다.</p>
+              )}
             </div>
 
             {/* PASSWORD 입력 */}
