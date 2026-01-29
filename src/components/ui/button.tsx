@@ -29,7 +29,9 @@ const buttonVariants = cva(
         dark: 'rounded-xl border border-[#3A3A3A] bg-[#2A2A2A] text-white font-medium hover:bg-[#3A3A3A] active:bg-[#1F1F1F]',
         card: 'rounded-xl border border-[#3A3A3A] bg-[#3A3A3A] text-[#888888] font-medium hover:bg-[#4A4A4A] active:bg-[#2A2A2A]',
         search:
-          'rounded-md border border-[#F04444] text-foreground shadow-[0px_6px_16px_rgba(227,27,35,0.35)] bg-[linear-gradient(90deg,#8B0F14_0%,#C4161C_45%,#E31B23_100%)] hover:opacity-90 active:opacity-80 active:shadow-[0px_2px_8px_rgba(227,27,35,0.25)]',
+          'rounded-md border border-[#F04444] bg-[#8B0F14] text-white hover:bg-[#A01118] active:bg-[#6E0B10]',
+        active:
+          'rounded-md border border-[#F04444] bg-[#8B0F14] text-white hover:bg-[#A01118] active:bg-[#6E0B10]',
       },
       size: {
         default: 'h-9 px-4 py-2 has-[>svg]:px-3',
