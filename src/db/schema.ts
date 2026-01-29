@@ -48,6 +48,42 @@ export const workoutSets = pgTable('workout_sets', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
+// 루틴 테이블 (사용자의 운동 루틴)
+export const routines = pgTable('routines', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// 루틴 운동 테이블 (루틴에 포함된 운동 목록)
+export const routineExercises = pgTable('routine_exercises', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  routineId: uuid('routine_id')
+    .notNull()
+    .references(() => routines.id, { onDelete: 'cascade' }),
+  exerciseId: uuid('exercise_id')
+    .notNull()
+    .references(() => exercises.id),
+  order: integer('order').notNull(), // 운동 순서
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+// 루틴 운동 세트 테이블 (각 운동의 세트별 무게/횟수)
+export const routineExerciseSets = pgTable('routine_exercise_sets', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  routineExerciseId: uuid('routine_exercise_id')
+    .notNull()
+    .references(() => routineExercises.id, { onDelete: 'cascade' }),
+  setNumber: integer('set_number').notNull(), // 세트 번호 (1, 2, 3...)
+  weight: real('weight'), // kg 단위
+  reps: integer('reps'), // 반복 횟수
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
 // 타입 내보내기
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -60,3 +96,12 @@ export type NewWorkoutSession = typeof workoutSessions.$inferInsert;
 
 export type WorkoutSet = typeof workoutSets.$inferSelect;
 export type NewWorkoutSet = typeof workoutSets.$inferInsert;
+
+export type Routine = typeof routines.$inferSelect;
+export type NewRoutine = typeof routines.$inferInsert;
+
+export type RoutineExercise = typeof routineExercises.$inferSelect;
+export type NewRoutineExercise = typeof routineExercises.$inferInsert;
+
+export type RoutineExerciseSet = typeof routineExerciseSets.$inferSelect;
+export type NewRoutineExerciseSet = typeof routineExerciseSets.$inferInsert;

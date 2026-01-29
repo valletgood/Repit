@@ -9,8 +9,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default:
-          'bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80',
+        default: 'bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80',
         destructive:
           'bg-destructive text-white hover:bg-destructive/90 active:bg-destructive/80 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60',
         outline:
@@ -24,15 +23,22 @@ const buttonVariants = cva(
           'rounded-[80px] border border-[#F04444] text-foreground shadow-[0px_6px_16px_rgba(227,27,35,0.35)] bg-[linear-gradient(90deg,#8B0F14_0%,#C4161C_45%,#E31B23_100%)] hover:opacity-90 active:opacity-80 active:shadow-[0px_2px_8px_rgba(227,27,35,0.25)]',
         authSecondary:
           'rounded-[80px] border border-[#3A3A3A] bg-[linear-gradient(90deg,#1F1F1F_0%,#414141_100%)] text-foreground hover:opacity-90 active:opacity-80 active:border-[#4A4A4A]',
+        // 메인 앱용 버튼
+        primary:
+          'rounded-xl border border-[#8B0F14] bg-[#E31B23] text-white font-semibold hover:bg-[#C4161C] active:bg-[#8B0F14]',
+        dark: 'rounded-xl border border-[#3A3A3A] bg-[#2A2A2A] text-white font-medium hover:bg-[#3A3A3A] active:bg-[#1F1F1F]',
+        card: 'rounded-xl border border-[#3A3A3A] bg-[#3A3A3A] text-[#888888] font-medium hover:bg-[#4A4A4A] active:bg-[#2A2A2A]',
       },
       size: {
         default: 'h-9 px-4 py-2 has-[>svg]:px-3',
         sm: 'h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5',
         lg: 'h-10 rounded-md px-6 has-[>svg]:px-4',
+        xl: 'h-12 px-6 py-3 text-base',
         icon: 'size-9',
         auth: 'h-[43px]',
         'icon-sm': 'size-8',
         'icon-lg': 'size-10',
+        full: 'h-12 w-full',
       },
     },
     defaultVariants: {
