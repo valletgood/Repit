@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Space_Grotesk, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import QueryProvider from '@/components/providers/QueryProvider';
+import ReduxProvider from '@/redux/ReduxProvider';
 import { Toaster } from '@/components/ui/sonner';
 
 const spaceGrotesk = Space_Grotesk({
@@ -34,10 +35,12 @@ export default function RootLayout({
   return (
     <html lang="ko" className="dark">
       <body className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased`}>
-        <QueryProvider>
-          {children}
-          <Toaster position="top-center" />
-        </QueryProvider>
+        <ReduxProvider>
+          <QueryProvider>
+            {children}
+            <Toaster position="top-center" />
+          </QueryProvider>
+        </ReduxProvider>
       </body>
     </html>
   );
