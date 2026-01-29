@@ -7,13 +7,16 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { LoginRequest } from '@/app/api/auth/login/client/service/service';
 import { useLogin } from '@/app/api/auth/login/client/hooks/useLogin';
+import { useAppDispatch } from '@/redux/hooks';
+import { login as loginAction } from '@/redux/slices/userSlice';
 
 export default function LoginPage() {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [showError, setShowError] = useState(false);
   const router = useRouter();
-  const { mutate: login } = useLogin();
+  const dispatch = useAppDispatch();
+  const { mutate: loginMutate } = useLogin();
   const handleId = (value: string) => {
     setId(value);
   };
@@ -31,8 +34,18 @@ export default function LoginPage() {
       userId: id,
       password: password,
     };
-    login(payload, {
-      onSuccess: () => {
+    loginMutate(payload, {
+      onSuccess: (response) => {
+        // Redux에 유저 정보 저장
+        dispatch(
+          loginAction({
+            id: response.user.id,
+            userId: response.user.userId,
+            name: response.user.name,
+            gender: response.user.gender,
+            lastLoginAt: new Date().toISOString(),
+          })
+        );
         router.push('/');
       },
       onError: () => {

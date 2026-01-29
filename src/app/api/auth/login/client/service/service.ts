@@ -1,11 +1,23 @@
-import axios from 'axios';
+import axiosInstance from '@/lib/axios';
 
 export interface LoginRequest {
   userId: string;
   password: string;
 }
 
-export const login = async (payload: LoginRequest) => {
-  const response = await axios.post('/api/auth/login', payload);
+export interface LoginResponse {
+  message: string;
+  user: {
+    id: string;
+    userId: string;
+    name: string;
+    gender: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+}
+
+export const login = async (payload: LoginRequest): Promise<LoginResponse> => {
+  const response = await axiosInstance.post('/api/auth/login', payload);
   return response.data;
 };
