@@ -1,4 +1,4 @@
-import { Bar, BarChart } from 'recharts';
+import { Bar, BarChart, XAxis, Cell, ResponsiveContainer } from 'recharts';
 
 interface ChartBarProps {
   data: {
@@ -7,14 +7,31 @@ interface ChartBarProps {
   }[];
 }
 
+const getBarColor = (value: number): string => {
+  if (value <= 30) return '#260108';
+  if (value <= 60) return '#730216';
+  return '#A60320';
+};
+
 export default function ChartBar({ data }: ChartBarProps) {
   return (
-    <BarChart
-      style={{ width: '100%', maxWidth: '300px', maxHeight: '100px', aspectRatio: 1.618 }}
-      responsive
-      data={data}
-    >
-      <Bar dataKey="value" fill="#8884d8" />
-    </BarChart>
+    <ResponsiveContainer width="100%" height={150}>
+      <BarChart data={data} barCategoryGap="20%">
+        <XAxis
+          dataKey="name"
+          axisLine={false}
+          tickLine={false}
+          tick={{ fill: '#888888', fontSize: 12 }}
+        />
+        <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+          {data.map((entry, index) => (
+            <Cell
+              key={`cell-${index}`}
+              fill={entry.name === '평균' ? '#D90416' : getBarColor(entry.value)}
+            />
+          ))}
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
   );
 }

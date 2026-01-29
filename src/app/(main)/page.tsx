@@ -4,17 +4,18 @@ import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
 import { useAppSelector } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
+import ChartBar from '@/components/chart/ChartBar';
 
 // 임시 데이터
 const weeklyData = [
-  { day: '1', value: 30 },
-  { day: '2', value: 100 },
-  { day: '3', value: 20 },
-  { day: '4', value: 0 },
-  { day: '5', value: 50 },
-  { day: '6', value: 60 },
-  { day: '7', value: 70 },
-  { day: '평균', value: 80 },
+  { name: '월', value: 30 },
+  { name: '화', value: 100 },
+  { name: '수', value: 20 },
+  { name: '목', value: 10 },
+  { name: '금', value: 50 },
+  { name: '토', value: 60 },
+  { name: '일', value: 70 },
+  { name: '평균', value: 80 },
 ];
 
 const routines = [];
@@ -53,7 +54,8 @@ export default function HomePage() {
           <h2 className="mb-4 text-lg font-bold text-white">최근 기록</h2>
 
           {/* 차트 */}
-          <div className="mb-4 flex items-end justify-between gap-2">
+          <ChartBar data={weeklyData} />
+          {/* <div className="mb-4 flex items-end justify-between gap-2">
             {weeklyData.map((item, index) => {
               const maxValue = 100;
               const height = item.value === 0 ? 8 : (item.value / maxValue) * 120;
@@ -69,7 +71,7 @@ export default function HomePage() {
                 </div>
               );
             })}
-          </div>
+          </div> */}
 
           {/* 요약 정보 */}
           <div className="flex items-center justify-between">
