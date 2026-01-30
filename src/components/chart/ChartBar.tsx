@@ -8,8 +8,8 @@ interface ChartBarProps {
 }
 
 const getBarColor = (value: number): string => {
-  if (value <= 30) return '#260108';
-  if (value <= 60) return '#730216';
+  if (value < 1800) return '#260108';
+  if (value < 3600) return '#730216';
   return '#A60320';
 };
 

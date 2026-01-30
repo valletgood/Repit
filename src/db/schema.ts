@@ -29,7 +29,7 @@ export const workoutSessions = pgTable('workout_sessions', {
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
   date: timestamp('date').notNull(),
-  notes: text('notes'),
+  duration: integer('duration').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 

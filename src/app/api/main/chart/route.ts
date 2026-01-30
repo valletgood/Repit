@@ -15,10 +15,9 @@ export async function GET(request: NextRequest) {
     const startDate = new Date(searchParams.get('startDate') || '');
     const endDate = new Date(searchParams.get('endDate') || '');
 
-    if (!startDate || !endDate) {
-      return NextResponse.json({ error: '날짜 정보가 필요합니다.' }, { status: 400 });
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      return NextResponse.json({ error: '유효하지 않은 날짜 형식입니다.' }, { status: 400 });
     }
-
     const chartData = await db
       .select()
       .from(workoutSessions)

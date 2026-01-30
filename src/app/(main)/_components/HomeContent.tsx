@@ -7,18 +7,8 @@ import { Button } from '@/components/ui/button';
 import ChartBar from '@/components/chart/ChartBar';
 import { useRouter } from 'next/navigation';
 import type { Routine } from '@/db/schema';
-
-// 임시 차트 데이터
-const weeklyData = [
-  { name: '월', value: 30 },
-  { name: '화', value: 100 },
-  { name: '수', value: 20 },
-  { name: '목', value: 10 },
-  { name: '금', value: 50 },
-  { name: '토', value: 60 },
-  { name: '일', value: 70 },
-  { name: '평균', value: 80 },
-];
+import { useGetWeeklyChart } from '@/app/api/main/chart/client/hooks/useGetWeeklyChart';
+import { useEffect, useState } from 'react';
 
 interface RoutineWithExercises extends Routine {
   exerciseCount: number;
@@ -31,17 +21,65 @@ interface HomeContentProps {
 
 export function HomeContent({ routines }: HomeContentProps) {
   const user = useAppSelector((state) => state.user);
+  const [stats, setStats] = useState({
+    sequenceDay: 0,
+    totalDay: 0,
+    totalDuration: ''
+  });
   const userName = user.name || 'OOO';
   const router = useRouter();
-
-  // 오늘 날짜
   const today = new Date();
+  const start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6);
+  const end = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1); // 내일 포함
+
+  const { data: chartData } = useGetWeeklyChart(user.id as string, start.toISOString(), end.toISOString());
+
   const month = today.getMonth() + 1;
   const date = today.getDate();
+
 
   const moveToRegRoutine = () => {
     router.push('/reg-routine');
   };
+
+  useEffect(() => {
+    if(chartData) {
+      // 연속 운동 일수 계산 (오늘부터 하루씩 전날로 돌아가면서)
+      let consecutiveDays = 0;
+      const today = new Date();
+      
+      for (let i = 0; i < 7; i++) {
+        const checkDate = new Date(today);
+        checkDate.setDate(today.getDate() - i);
+        const dateStr = checkDate.toISOString().split('T')[0].substring(5); // MM-DD 형식
+        
+        const dayData = chartData.find(item => item.name === dateStr);
+        if (dayData && dayData.value > 0) {
+          consecutiveDays++;
+        } else {
+          break; // 운동이 없는 날이 나오면 중단
+        }
+      }
+      
+      // 총 운동 일수와 시간 계산
+      const workoutDays = chartData.filter(item => item.name !== '평균' && item.value > 0).length;
+      const totalSeconds = chartData
+        .filter(item => item.name !== '평균')
+        .reduce((sum, item) => sum + item.value, 0);
+      
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      
+      // Batch all state updates together asynchronously
+      setTimeout(() => {
+        setStats({
+          sequenceDay: consecutiveDays,
+          totalDay: workoutDays,
+          totalDuration: `${hours}시간 ${minutes}분`
+        });
+      }, 0);
+    }
+  }, [chartData]);
 
   return (
     <main className="min-h-screen bg-[#1A1A1A]">
@@ -59,7 +97,7 @@ export function HomeContent({ routines }: HomeContentProps) {
               {month}월 {date}일
             </span>
             <span className="text-sm text-[#888888]">|</span>
-            <span className="text-sm">🔥 3일 연속</span>
+            <span className="text-sm">🔥 {stats.sequenceDay}일 연속</span>
           </div>
         </section>
 
@@ -68,13 +106,13 @@ export function HomeContent({ routines }: HomeContentProps) {
           <h2 className="mb-4 text-lg font-bold text-white">최근 기록</h2>
 
           {/* 차트 */}
-          <ChartBar data={weeklyData} />
+          <ChartBar data={chartData ?? []} />
 
           {/* 요약 정보 */}
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-[#888888]">지난 7일</p>
-              <p className="text-lg font-bold text-white">총 5회 2시간 40분</p>
+              <p className="text-lg font-bold text-white">총 {stats.totalDay}회 {stats.totalDuration}</p>
             </div>
             <ChevronRight className="h-6 w-6 text-[#888888]" />
           </div>
