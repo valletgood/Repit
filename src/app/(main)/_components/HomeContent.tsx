@@ -45,6 +45,10 @@ export function HomeContent({ routines }: HomeContentProps) {
     router.push('/reg-routine');
   };
 
+  const moveToDoing = (routineId: string) => {
+    router.push(`/doing/${routineId}`);
+  };
+
   useEffect(() => {
     if (chartData) {
       // 연속 운동 일수 계산 (오늘부터 하루씩 전날로 돌아가면서)
@@ -127,7 +131,11 @@ export function HomeContent({ routines }: HomeContentProps) {
         {routines.length > 0 && (
           <div className="scrollbar-hide flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
             {routines.map((routine) => (
-              <div key={routine.id} className="rounded-xl bg-[#2A2A2A] p-4">
+              <div
+                key={routine.id}
+                className="cursor-pointer rounded-xl bg-[#2A2A2A] p-4 transition-colors hover:bg-[#333333]"
+                onClick={() => moveToDoing(routine.id)}
+              >
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-bold text-white">{routine.name}</p>
