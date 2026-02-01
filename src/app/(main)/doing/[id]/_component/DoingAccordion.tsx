@@ -25,28 +25,26 @@ export function DoingAccordion({ exercise }: DoingAccordionProps) {
   const defaultValue = exercise?.[0]?.routineExerciseId;
   const [openedId, setOpenedId] = useState(defaultValue);
 
-  const handleOpenedId = (value: string) => {
-    setOpenedId(value);
-  };
-
   return (
-    <div className="w-full">
-      <Accordion
-        type="single"
-        collapsible
-        value={openedId}
-        onValueChange={handleOpenedId}
-        defaultValue={defaultValue}
-        className="scrollbar-hide flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto"
-      >
-        {exercise.map((item) => (
-          <ExerciseItem
-            key={item.routineExerciseId}
-            item={item}
-            isOpen={openedId === item.routineExerciseId}
-          />
-        ))}
-      </Accordion>
+    <div className="flex min-h-0 w-full flex-1 flex-col">
+      <div className="scrollbar-hide min-h-0 flex-1 overflow-y-auto">
+        <Accordion
+          type="single"
+          collapsible
+          value={openedId}
+          onValueChange={setOpenedId}
+          defaultValue={defaultValue}
+          className="flex flex-col gap-3"
+        >
+          {exercise.map((item) => (
+            <ExerciseItem
+              key={item.routineExerciseId}
+              item={item}
+              isOpen={openedId === item.routineExerciseId}
+            />
+          ))}
+        </Accordion>
+      </div>
     </div>
   );
 }
