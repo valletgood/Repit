@@ -81,8 +81,10 @@ export const routineExerciseSets = pgTable('routine_exercise_sets', {
     .notNull()
     .references(() => routineExercises.id, { onDelete: 'cascade' }),
   setNumber: integer('set_number').notNull(), // 세트 번호 (1, 2, 3...)
-  weight: real('weight'), // kg 단위
-  reps: integer('reps'), // 반복 횟수
+  weight: real('weight'), // kg 단위 (웨이트용)
+  reps: integer('reps'), // 반복 횟수 (웨이트용)
+  duration: integer('duration'), // 초 단위 (유산소용)
+  distance: real('distance'), // km 단위 (유산소용)
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 

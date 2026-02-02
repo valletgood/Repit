@@ -6,6 +6,7 @@ import { eq } from 'drizzle-orm';
 type SaveRoutineSetsBody = {
   routineId: string;
   duration: number;
+  saveSession: boolean;
   exercises: {
     routineExerciseId: string;
     exerciseId: string;
@@ -15,6 +16,8 @@ type SaveRoutineSetsBody = {
       setNumber: number;
       weight: number | null;
       reps: number | null;
+      duration: number | null;
+      distance: number | null;
     }[];
   }[];
 };
@@ -38,12 +41,14 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: '루틴을 찾을 수 없습니다.' }, { status: 404 });
     }
 
-    // 운동 세션 저장
-    await db.insert(workoutSessions).values({
-      userId: routine.userId,
-      date: new Date(),
-      duration: body.duration ?? 0,
-    });
+    // 운동 세션 저장 (saveSession이 true일 때만)
+    if (body.saveSession) {
+      await db.insert(workoutSessions).values({
+        userId: routine.userId,
+        date: new Date(),
+        duration: body.duration ?? 0,
+      });
+    }
 
     // 각 운동별로 세트 처리
     for (const exercise of body.exercises) {
@@ -77,6 +82,8 @@ export async function PUT(req: Request) {
           setNumber: idx + 1,
           weight: s.weight,
           reps: s.reps,
+          duration: s.duration,
+          distance: s.distance,
         }));
 
         await db.insert(routineExerciseSets).values(newSets);

@@ -3,6 +3,7 @@ import axiosInstance from '@/lib/axios';
 export interface SaveRoutineSetsRequest {
   routineId: string;
   duration: number;
+  saveSession: boolean;
   exercises: {
     routineExerciseId: string;
     exerciseId: string;
@@ -12,6 +13,8 @@ export interface SaveRoutineSetsRequest {
       setNumber: number;
       weight: number | null;
       reps: number | null;
+      duration: number | null;
+      distance: number | null;
     }[];
   }[];
 }

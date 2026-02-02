@@ -21,7 +21,7 @@ interface DoingAccordionProps {
   onUpdateSet: (
     routineExerciseId: string,
     setId: string,
-    field: 'weight' | 'reps',
+    field: 'weight' | 'reps' | 'duration' | 'distance',
     value: number | null
   ) => void;
 }
@@ -70,24 +70,44 @@ interface ExerciseItemProps {
   onUpdateSet: (
     routineExerciseId: string,
     setId: string,
-    field: 'weight' | 'reps',
+    field: 'weight' | 'reps' | 'duration' | 'distance',
     value: number | null
   ) => void;
 }
 
 function ExerciseItem({ item, isOpen, onAddSet, onDeleteSet, onUpdateSet }: ExerciseItemProps) {
+  const isCardio = item.equipment === '유산소';
+
   const get1Rm = (weight: number, reps: number) => {
     return weight * (1 + reps / 30);
   };
 
+  const formatDuration = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    if (h > 0) return `${h}시간 ${m}분`;
+    if (m > 0) return `${m}분 ${s}초`;
+    return `${s}초`;
+  };
+
   const sets = item.sets ?? [];
   const setCount = sets.length;
-  const totalReps = sets.reduce((sum, s) => sum + (s.reps ?? 0), 0);
-  const oneRmValues = sets
-    .filter((s) => s.weight && s.reps && s.reps > 0 && s.reps <= 10)
-    .map((s) => get1Rm(s.weight!, s.reps!));
-  const oneRm = oneRmValues.length > 0 ? Math.round(Math.max(...oneRmValues)) : null;
-  const summary = `${totalReps}회 / ${setCount}세트 / 1RM: ${oneRm ?? '-'}`;
+
+  // 유산소: 총 시간/거리, 웨이트: 총 횟수/1RM
+  let summary: string;
+  if (isCardio) {
+    const totalDuration = sets.reduce((sum, s) => sum + (s.duration ?? 0), 0);
+    const totalDistance = sets.reduce((sum, s) => sum + (s.distance ?? 0), 0);
+    summary = `${formatDuration(totalDuration)} / ${totalDistance.toFixed(2)}km`;
+  } else {
+    const totalReps = sets.reduce((sum, s) => sum + (s.reps ?? 0), 0);
+    const oneRmValues = sets
+      .filter((s) => s.weight && s.reps && s.reps > 0 && s.reps <= 10)
+      .map((s) => get1Rm(s.weight!, s.reps!));
+    const oneRm = oneRmValues.length > 0 ? Math.round(Math.max(...oneRmValues)) : null;
+    summary = `${totalReps}회 / ${setCount}세트 / 1RM: ${oneRm ?? '-'}`;
+  }
 
   const handleAddSet = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -141,31 +161,65 @@ function ExerciseItem({ item, isOpen, onAddSet, onDeleteSet, onUpdateSet }: Exer
               key={`${item.routineExerciseId}-${set.id}`}
               className="grid grid-cols-[1fr_auto_1fr_auto_auto] items-center gap-x-6 gap-y-3"
             >
-              {/* 무게 */}
-              <Input
-                variant="auth"
-                type="number"
-                defaultValue={set.weight ?? ''}
-                placeholder="0"
-                onBlur={(e) => {
-                  const val = e.target.value === '' ? null : Number(e.target.value);
-                  onUpdateSet(item.routineExerciseId, set.id, 'weight', val);
-                }}
-              />
-              <span className="text-lg font-semibold text-white">KG</span>
+              {isCardio ? (
+                <>
+                  {/* 시간 (분 단위 입력) */}
+                  <Input
+                    variant="auth"
+                    type="number"
+                    defaultValue={set.duration ? Math.floor(set.duration / 60) : ''}
+                    placeholder="0"
+                    onBlur={(e) => {
+                      const minutes = e.target.value === '' ? null : Number(e.target.value);
+                      const seconds = minutes !== null ? minutes * 60 : null;
+                      onUpdateSet(item.routineExerciseId, set.id, 'duration', seconds);
+                    }}
+                  />
+                  <span className="text-lg font-semibold text-white">분</span>
 
-              {/* 횟수 */}
-              <Input
-                variant="auth"
-                type="number"
-                defaultValue={set.reps ?? ''}
-                placeholder="0"
-                onBlur={(e) => {
-                  const val = e.target.value === '' ? null : Number(e.target.value);
-                  onUpdateSet(item.routineExerciseId, set.id, 'reps', val);
-                }}
-              />
-              <span className="text-lg font-semibold text-white">회</span>
+                  {/* 거리 */}
+                  <Input
+                    variant="auth"
+                    type="number"
+                    step="0.01"
+                    defaultValue={set.distance ?? ''}
+                    placeholder="0"
+                    onBlur={(e) => {
+                      const val = e.target.value === '' ? null : Number(e.target.value);
+                      onUpdateSet(item.routineExerciseId, set.id, 'distance', val);
+                    }}
+                  />
+                  <span className="text-lg font-semibold text-white">km</span>
+                </>
+              ) : (
+                <>
+                  {/* 무게 */}
+                  <Input
+                    variant="auth"
+                    type="number"
+                    defaultValue={set.weight ?? ''}
+                    placeholder="0"
+                    onBlur={(e) => {
+                      const val = e.target.value === '' ? null : Number(e.target.value);
+                      onUpdateSet(item.routineExerciseId, set.id, 'weight', val);
+                    }}
+                  />
+                  <span className="text-lg font-semibold text-white">KG</span>
+
+                  {/* 횟수 */}
+                  <Input
+                    variant="auth"
+                    type="number"
+                    defaultValue={set.reps ?? ''}
+                    placeholder="0"
+                    onBlur={(e) => {
+                      const val = e.target.value === '' ? null : Number(e.target.value);
+                      onUpdateSet(item.routineExerciseId, set.id, 'reps', val);
+                    }}
+                  />
+                  <span className="text-lg font-semibold text-white">회</span>
+                </>
+              )}
 
               {/* 삭제 */}
               <Button

@@ -12,6 +12,8 @@ export interface RoutineExerciseSetDTO {
   setNumber: number;
   weight: number | null;
   reps: number | null;
+  duration: number | null;
+  distance: number | null;
 }
 
 export interface RoutineExerciseDTO {
@@ -83,6 +85,8 @@ export default async function DoingPage({ params }: DoingPageProps) {
       setNumber: routineExerciseSets.setNumber,
       weight: routineExerciseSets.weight,
       reps: routineExerciseSets.reps,
+      duration: routineExerciseSets.duration,
+      distance: routineExerciseSets.distance,
     })
     .from(routineExerciseSets)
     .where(inArray(routineExerciseSets.routineExerciseId, routineExerciseIds))
@@ -92,7 +96,14 @@ export default async function DoingPage({ params }: DoingPageProps) {
   const setsByRoutineExerciseId = new Map<string, RoutineExerciseSetDTO[]>();
   for (const s of setRows) {
     const arr = setsByRoutineExerciseId.get(s.routineExerciseId) ?? [];
-    arr.push({ id: s.id, setNumber: s.setNumber, weight: s.weight ?? null, reps: s.reps ?? null });
+    arr.push({
+      id: s.id,
+      setNumber: s.setNumber,
+      weight: s.weight ?? null,
+      reps: s.reps ?? null,
+      duration: s.duration ?? null,
+      distance: s.distance ?? null,
+    });
     setsByRoutineExerciseId.set(s.routineExerciseId, arr);
   }
 

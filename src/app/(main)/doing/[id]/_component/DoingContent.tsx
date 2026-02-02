@@ -65,11 +65,14 @@ export function DoingContent({ exercise }: DoingContentProps) {
       prev.map((ex) => {
         if (ex.routineExerciseId !== routineExerciseId) return ex;
         const maxSetNumber = Math.max(0, ...ex.sets.map((s) => s.setNumber));
+        const isCardio = ex.equipment === '유산소';
         const newSet: RoutineExerciseSetDTO = {
           id: `temp-${Date.now()}`,
           setNumber: maxSetNumber + 1,
-          weight: 0,
-          reps: 10,
+          weight: isCardio ? null : 0,
+          reps: isCardio ? null : 10,
+          duration: isCardio ? 1800 : null,
+          distance: isCardio ? 0 : null,
         };
         return { ...ex, sets: [...ex.sets, newSet] };
       })
@@ -86,7 +89,12 @@ export function DoingContent({ exercise }: DoingContentProps) {
   }, []);
 
   const onUpdateSet = useCallback(
-    (routineExerciseId: string, setId: string, field: 'weight' | 'reps', value: number | null) => {
+    (
+      routineExerciseId: string,
+      setId: string,
+      field: 'weight' | 'reps' | 'duration' | 'distance',
+      value: number | null
+    ) => {
       setExercises((prev) =>
         prev.map((ex) => {
           if (ex.routineExerciseId !== routineExerciseId) return ex;
@@ -108,6 +116,7 @@ export function DoingContent({ exercise }: DoingContentProps) {
       const payload = {
         routineId: exercise.id,
         duration,
+        saveSession: true,
         exercises: exercises.map((ex) => ({
           routineExerciseId: ex.routineExerciseId,
           exerciseId: ex.exerciseId,
@@ -118,6 +127,28 @@ export function DoingContent({ exercise }: DoingContentProps) {
       saveRoutineSets(payload, {
         onSuccess: () => {
           toast.message('운동을 완료했습니다.');
+          router.push('/');
+        },
+      });
+    });
+  };
+
+  const onUpdateRoutine = () => {
+    modal.confirm('루틴을 업데이트하시겠습니까?', () => {
+      const payload = {
+        routineId: exercise.id,
+        duration: 0,
+        saveSession: false,
+        exercises: exercises.map((ex) => ({
+          routineExerciseId: ex.routineExerciseId,
+          exerciseId: ex.exerciseId,
+          order: ex.order,
+          sets: ex.sets,
+        })),
+      };
+      saveRoutineSets(payload, {
+        onSuccess: () => {
+          toast.message('루틴이 업데이트되었습니다.');
           router.push('/');
         },
       });
@@ -135,16 +166,28 @@ export function DoingContent({ exercise }: DoingContentProps) {
       }
 
       const maxOrder = Math.max(0, ...exercises.map((e) => e.order));
-      const newExercises: RoutineExerciseDTO[] = selectedExercises.map((ex, idx) => ({
-        routineExerciseId: `temp-exercise-${Date.now()}-${idx}`,
-        order: maxOrder + idx + 1,
-        exerciseId: ex.excerciseId,
-        name: ex.name,
-        mainCategory: ex.mainCategory,
-        subCategory: ex.subCategory,
-        equipment: ex.equipment,
-        sets: [{ id: `temp-set-${Date.now()}-${idx}`, setNumber: 1, weight: 0, reps: 10 }],
-      }));
+      const newExercises: RoutineExerciseDTO[] = selectedExercises.map((ex, idx) => {
+        const isCardio = ex.equipment === '유산소';
+        return {
+          routineExerciseId: `temp-exercise-${Date.now()}-${idx}`,
+          order: maxOrder + idx + 1,
+          exerciseId: ex.excerciseId,
+          name: ex.name,
+          mainCategory: ex.mainCategory,
+          subCategory: ex.subCategory,
+          equipment: ex.equipment,
+          sets: [
+            {
+              id: `temp-set-${Date.now()}-${idx}`,
+              setNumber: 1,
+              weight: isCardio ? null : 0,
+              reps: isCardio ? null : 10,
+              duration: isCardio ? 1800 : null,
+              distance: isCardio ? 0 : null,
+            },
+          ],
+        };
+      });
       setExercises((prev) => [...prev, ...newExercises]);
       toast.message(`${selectedExercises.length}개 운동이 추가되었습니다.`);
     },
@@ -153,9 +196,19 @@ export function DoingContent({ exercise }: DoingContentProps) {
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
-      {/* 헤더: 루틴 이름 + 경과 시간 */}
+      {/* 헤더: 루틴 이름 + 운동 추가 버튼 + 경과 시간 */}
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-white">{exercise.name}</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl font-bold text-white">{exercise.name}</h1>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsSheetOpen(true)}
+            className="text-xs"
+          >
+            + 운동 추가
+          </Button>
+        </div>
         {isStarted && (
           <span className="text-lg font-semibold text-[#E31B23]">{formatTime(elapsedSeconds)}</span>
         )}
@@ -174,15 +227,25 @@ export function DoingContent({ exercise }: DoingContentProps) {
       {/* 하단 고정 버튼바 */}
       <div className="fixed right-0 bottom-20 left-1/2 w-1/2 -translate-x-1/2 px-4 py-4">
         <div className="flex items-center justify-center gap-4 px-4">
-          <Button variant="secondary" onClick={() => setIsSheetOpen(true)} className="w-40">
-            운동 추가
+          <Button
+            variant="secondary"
+            onClick={onUpdateRoutine}
+            disabled={isPending}
+            className="w-40 shadow-lg"
+          >
+            루틴 업데이트
           </Button>
           {isStarted ? (
-            <Button variant="active" onClick={onSave} disabled={isPending} className="w-40">
+            <Button
+              variant="active"
+              onClick={onSave}
+              disabled={isPending}
+              className="w-40 shadow-lg"
+            >
               운동 완료
             </Button>
           ) : (
-            <Button variant="active" onClick={onStart} className="w-40">
+            <Button variant="active" onClick={onStart} className="w-40 shadow-lg">
               운동 시작
             </Button>
           )}
