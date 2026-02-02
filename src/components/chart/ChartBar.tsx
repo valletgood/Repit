@@ -15,7 +15,7 @@ const getBarColor = (value: number): string => {
 
 export default function ChartBar({ data }: ChartBarProps) {
   return (
-    <ResponsiveContainer width="100%" height={150}>
+    <ResponsiveContainer width="100%" height={120}>
       <BarChart data={data} barCategoryGap="20%">
         <XAxis
           dataKey="name"

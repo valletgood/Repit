@@ -10,7 +10,6 @@ import type { Routine } from '@/db/schema';
 import { useGetWeeklyChart } from '@/app/api/main/chart/client/hooks/useGetWeeklyChart';
 import { useEffect, useState } from 'react';
 import { useModal } from '@/hooks/useModal';
-import { toast } from 'sonner';
 
 interface RoutineWithExercises extends Routine {
   exerciseCount: number;
@@ -106,7 +105,7 @@ export function HomeContent({ routines }: HomeContentProps) {
       </section>
 
       {/* 섹션 2: 최근 기록 */}
-      <section className="mb-8">
+      <section className="mb-4">
         <h2 className="mb-4 text-lg font-bold text-white">최근 기록</h2>
 
         {/* 차트 */}
@@ -125,7 +124,7 @@ export function HomeContent({ routines }: HomeContentProps) {
       </section>
 
       {/* 섹션 3: 루틴 */}
-      <section className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <section className="flex min-h-0 flex-1 flex-col overflow-hidden pb-10">
         <h2 className="mb-4 text-lg font-bold text-white">루틴</h2>
         <Button variant="dark" size="full" onClick={moveToRegRoutine} className="mb-4 shrink-0">
           + 루틴 만들기

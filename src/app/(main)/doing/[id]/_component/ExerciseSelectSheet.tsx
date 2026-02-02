@@ -146,7 +146,7 @@ export function ExerciseSelectSheet({
         )}
 
         {/* 운동 목록 */}
-        <div className="scrollbar-hide flex flex-1 flex-col gap-2 overflow-y-auto pb-4">
+        <div className="scrollbar-hide flex flex-1 flex-col gap-2 overflow-y-auto pb-25">
           {filteredExercises.length === 0 ? (
             <div className="flex flex-1 items-center justify-center">
               <p className="text-[#999999]">검색 결과가 없습니다</p>
@@ -207,7 +207,7 @@ export function ExerciseSelectSheet({
 
         {/* 하단 확인 버튼 */}
         {selectedExercises.length > 0 && (
-          <div className="fixed right-0 bottom-20 left-1/2 w-1/2 -translate-x-1/2 px-4 py-4">
+          <div className="fixed right-0 bottom-0 left-1/2 w-1/2 -translate-x-1/2 px-4 py-4">
             <Button
               onClick={handleConfirm}
               variant="active"
