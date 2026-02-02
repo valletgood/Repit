@@ -88,6 +88,17 @@ export const routineExerciseSets = pgTable('routine_exercise_sets', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
+// 리프레시 토큰 테이블
+export const refreshTokens = pgTable('refresh_tokens', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  token: text('token').notNull().unique(),
+  expiresAt: timestamp('expires_at').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
 // 타입 내보내기
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -109,3 +120,6 @@ export type NewRoutineExercise = typeof routineExercises.$inferInsert;
 
 export type RoutineExerciseSet = typeof routineExerciseSets.$inferSelect;
 export type NewRoutineExerciseSet = typeof routineExerciseSets.$inferInsert;
+
+export type RefreshToken = typeof refreshTokens.$inferSelect;
+export type NewRefreshToken = typeof refreshTokens.$inferInsert;

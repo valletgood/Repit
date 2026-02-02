@@ -2,11 +2,22 @@ import { db } from '@/db';
 import { routines, routineExercises, exercises } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { HomeContent } from './_components/HomeContent';
+import { getCurrentUser } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 
 // 서버 컴포넌트 - DB에서 루틴 데이터를 직접 불러옴
 export default async function HomePage() {
-  // 모든 루틴 조회
-  const routineList = await db.select().from(routines);
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect('/login');
+  }
+
+  // 해당 사용자의 루틴만 조회
+  const routineList = await db
+    .select()
+    .from(routines)
+    .where(eq(routines.userId, user.id));
 
   // 각 루틴에 대해 운동 정보 조회
   const routinesWithExercises = await Promise.all(

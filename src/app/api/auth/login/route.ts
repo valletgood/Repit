@@ -2,6 +2,7 @@ import { db } from '@/db';
 import { users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
+import { setAuthCookies } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,6 +31,9 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
+
+    // 토큰 발급 및 쿠키 설정
+    await setAuthCookies(user[0].id);
 
     // 로그인 성공 - 비밀번호 제외한 사용자 정보 반환
     const { password: _, ...userWithoutPassword } = user[0];
