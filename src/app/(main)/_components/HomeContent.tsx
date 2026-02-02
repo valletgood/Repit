@@ -49,10 +49,7 @@ export function HomeContent({ routines }: HomeContentProps) {
   };
 
   const moveToDoing = (routineId: string) => {
-    modal.confirm('운동을 시작하시겠습니까?', () => {
-      toast.message('운동을 시작합니다.');
-      router.push(`/doing/${routineId}`);
-    });
+    router.push(`/doing/${routineId}`);
   };
 
   useEffect(() => {
