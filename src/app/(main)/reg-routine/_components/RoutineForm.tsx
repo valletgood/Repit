@@ -150,7 +150,7 @@ export function RoutineForm({ exercises, categories, equipments }: RoutineFormPr
       )}
 
       {/* 운동 목록 */}
-      <div className="scrollbar-hide flex flex-1 flex-col gap-3 overflow-y-auto rounded-xl pb-25">
+      <div className="scrollbar-hide flex flex-1 flex-col gap-3 overflow-y-auto rounded-xl pb-4">
         {filteredExercises.length === 0 ? (
           <div className="flex flex-1 items-center justify-center">
             <p className="text-[#999999]">검색 결과가 없습니다</p>
@@ -206,7 +206,7 @@ export function RoutineForm({ exercises, categories, equipments }: RoutineFormPr
 
       {/* 하단 고정 버튼 */}
       {selectedExercises.length > 0 && (
-        <div className="fixed right-0 bottom-0 left-1/2 w-1/2 -translate-x-1/2 px-4 py-4">
+        <div className="shrink-0 px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
           <Button
             onClick={handleOpenModal}
             variant="active"

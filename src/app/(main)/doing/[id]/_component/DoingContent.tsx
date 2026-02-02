@@ -215,7 +215,7 @@ export function DoingContent({ exercise }: DoingContentProps) {
       </div>
 
       {/* 스크롤 영역 */}
-      <div className="scrollbar-hide min-h-0 flex-1 overflow-y-auto pb-25">
+      <div className="scrollbar-hide min-h-0 flex-1 overflow-y-auto rounded-xl">
         <DoingAccordion
           exercises={exercises}
           onAddSet={onAddSet}
@@ -225,8 +225,8 @@ export function DoingContent({ exercise }: DoingContentProps) {
       </div>
 
       {/* 하단 고정 버튼바 */}
-      <div className="fixed right-0 bottom-0 left-1/2 w-1/2 -translate-x-1/2 px-4 py-4">
-        <div className="flex items-center justify-center gap-4 px-4">
+      <div className="shrink-0 px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+        <div className="flex items-center justify-center gap-4">
           <Button
             variant="secondary"
             onClick={onUpdateRoutine}

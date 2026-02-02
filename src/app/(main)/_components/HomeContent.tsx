@@ -124,14 +124,14 @@ export function HomeContent({ routines }: HomeContentProps) {
       </section>
 
       {/* 섹션 3: 루틴 */}
-      <section className="flex min-h-0 flex-1 flex-col overflow-hidden pb-10">
+      <section className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <h2 className="mb-4 text-lg font-bold text-white">루틴</h2>
         <Button variant="dark" size="full" onClick={moveToRegRoutine} className="mb-4 shrink-0">
           + 루틴 만들기
         </Button>
 
         {routines.length > 0 && (
-          <div className="scrollbar-hide flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
+          <div className="scrollbar-hide flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto rounded-xl">
             {routines.map((routine) => (
               <div
                 key={routine.id}
