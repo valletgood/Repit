@@ -11,9 +11,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
       <div className="flex h-[100svh] flex-col bg-[#1A1A1A]">
         <Header />
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-          {children}
-        </div>
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 pb-4">{children}</div>
       </div>
     </AuthGuard>
   );

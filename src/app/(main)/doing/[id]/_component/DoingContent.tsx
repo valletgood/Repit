@@ -250,9 +250,6 @@ export function DoingContent({ exercise }: DoingContentProps) {
             </Button>
           )}
         </div>
-
-        {/* 안전영역(iOS) 대응 */}
-        <div className="h-[env(safe-area-inset-bottom)]" />
       </div>
       <modal.Modal />
 
