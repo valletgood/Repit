@@ -180,6 +180,9 @@ export function RoutineForm({ exercises, categories, equipments }: RoutineFormPr
                     {exercise.equipment === '케이블' && (
                       <Image src="/images/icon_cable.svg" alt="케이블" width={30} height={30} />
                     )}
+                    {exercise.equipment === '유산소' && (
+                      <Image src="/images/icon_treadmill.svg" alt="케이블" width={30} height={30} />
+                    )}
                   </span>
                   <div className="flex flex-col">
                     <span className="font-medium text-white">{exercise.name}</span>
