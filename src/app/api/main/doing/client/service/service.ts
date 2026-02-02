@@ -2,6 +2,7 @@ import axiosInstance from '@/lib/axios';
 
 export interface SaveRoutineSetsRequest {
   routineId: string;
+  duration: number;
   exercises: {
     routineExerciseId: string;
     sets: {

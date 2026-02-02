@@ -115,7 +115,6 @@ export default async function DoingPage({ params }: DoingPageProps) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <h1 className="mb-4 text-xl font-bold text-white">{routineWithExercises.name}</h1>
       <DoingContent exercise={routineWithExercises} />
     </div>
   );

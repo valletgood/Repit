@@ -1,5 +1,5 @@
 'use client';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   RoutineWithExercises,
   RoutineExerciseDTO,
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { useSaveRoutineSets } from '@/app/api/main/doing/client/hooks/useSaveRoutineSets';
 import { useRouter } from 'next/navigation';
 import { useModal } from '@/hooks/useModal';
+import { toast } from 'sonner';
 
 interface DoingContentProps {
   exercise: RoutineWithExercises;
@@ -20,6 +21,26 @@ export function DoingContent({ exercise }: DoingContentProps) {
   const { mutate: saveRoutineSets, isPending } = useSaveRoutineSets();
   const router = useRouter();
   const modal = useModal();
+
+  const startTimeRef = useRef<number>(Date.now());
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setElapsedSeconds(Math.floor((Date.now() - startTimeRef.current) / 1000));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatTime = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    if (h > 0) {
+      return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
 
   const onAddSet = useCallback((routineExerciseId: string) => {
     setExercises((prev) =>
@@ -63,11 +84,13 @@ export function DoingContent({ exercise }: DoingContentProps) {
 
   const onSave = () => {
     modal.confirm('운동을 완료하시겠습니까?', () => {
+      const duration = Math.floor((Date.now() - startTimeRef.current) / 1000);
       saveRoutineSets(
-        { routineId: exercise.id, exercises },
+        { routineId: exercise.id, exercises, duration },
         {
           onSuccess: () => {
-            router.refresh();
+            toast.message('운동을 완료했습니다.');
+            router.push('/');
           },
         }
       );
@@ -76,7 +99,13 @@ export function DoingContent({ exercise }: DoingContentProps) {
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
-      {/* 스크롤 영역: 하단 버튼바 높이만큼 padding */}
+      {/* 헤더: 루틴 이름 + 경과 시간 */}
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-xl font-bold text-white">{exercise.name}</h1>
+        <span className="text-lg font-semibold text-[#E31B23]">{formatTime(elapsedSeconds)}</span>
+      </div>
+
+      {/* 스크롤 영역 */}
       <div className="flex min-h-0 flex-1 flex-col">
         <DoingAccordion
           exercises={exercises}

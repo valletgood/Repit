@@ -9,6 +9,8 @@ import { useRouter } from 'next/navigation';
 import type { Routine } from '@/db/schema';
 import { useGetWeeklyChart } from '@/app/api/main/chart/client/hooks/useGetWeeklyChart';
 import { useEffect, useState } from 'react';
+import { useModal } from '@/hooks/useModal';
+import { toast } from 'sonner';
 
 interface RoutineWithExercises extends Routine {
   exerciseCount: number;
@@ -21,6 +23,7 @@ interface HomeContentProps {
 
 export function HomeContent({ routines }: HomeContentProps) {
   const user = useAppSelector((state) => state.user);
+  const modal = useModal();
   const [stats, setStats] = useState({
     sequenceDay: 0,
     totalDay: 0,
@@ -46,7 +49,10 @@ export function HomeContent({ routines }: HomeContentProps) {
   };
 
   const moveToDoing = (routineId: string) => {
-    router.push(`/doing/${routineId}`);
+    modal.confirm('운동을 시작하시겠습니까?', () => {
+      toast.message('운동을 시작합니다.');
+      router.push(`/doing/${routineId}`);
+    });
   };
 
   useEffect(() => {
@@ -157,6 +163,7 @@ export function HomeContent({ routines }: HomeContentProps) {
           </div>
         )}
       </section>
+      <modal.Modal />
     </div>
   );
 }

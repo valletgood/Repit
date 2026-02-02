@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
       return NextResponse.json({ error: '유효하지 않은 날짜 형식입니다.' }, { status: 400 });
     }
-    const chartData = await db
+    const rawData = await db
       .select()
       .from(workoutSessions)
       .where(
@@ -27,6 +27,21 @@ export async function GET(request: NextRequest) {
           between(workoutSessions.date, startDate, endDate)
         )
       );
+
+    // 날짜별로 그룹화하여 duration 합산
+    const groupedByDate = new Map<string, { date: string; duration: number }>();
+    for (const session of rawData) {
+      const dateKey = session.date.toISOString().split('T')[0];
+      const existing = groupedByDate.get(dateKey);
+      if (existing) {
+        existing.duration += session.duration;
+      } else {
+        groupedByDate.set(dateKey, { date: dateKey, duration: session.duration });
+      }
+    }
+
+    const chartData = Array.from(groupedByDate.values());
+    console.log(chartData);
     return NextResponse.json(chartData, { status: 200 });
   } catch (error) {
     console.error('차트 데이터 조회 에러:', error);

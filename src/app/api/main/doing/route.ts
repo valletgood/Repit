@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
-import { routineExerciseSets } from '@/db/schema';
+import { routineExerciseSets, workoutSessions, routines } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
 type SaveRoutineSetsBody = {
   routineId: string;
+  duration: number;
   exercises: {
     routineExerciseId: string;
     sets: {
@@ -23,6 +24,24 @@ export async function PUT(req: Request) {
     if (!body?.routineId || !Array.isArray(body.exercises)) {
       return NextResponse.json({ error: '잘못된 요청입니다.' }, { status: 400 });
     }
+
+    // 루틴에서 userId 가져오기
+    const [routine] = await db
+      .select({ userId: routines.userId })
+      .from(routines)
+      .where(eq(routines.id, body.routineId))
+      .limit(1);
+
+    if (!routine) {
+      return NextResponse.json({ error: '루틴을 찾을 수 없습니다.' }, { status: 404 });
+    }
+
+    // 운동 세션 저장
+    await db.insert(workoutSessions).values({
+      userId: routine.userId,
+      date: new Date(),
+      duration: body.duration ?? 0,
+    });
 
     // 각 운동별로 세트 처리
     for (const exercise of body.exercises) {
