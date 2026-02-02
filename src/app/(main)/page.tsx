@@ -3,14 +3,14 @@ import { routines, routineExercises, exercises } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { HomeContent } from './_components/HomeContent';
 import { getCurrentUser } from '@/lib/auth';
-import { redirect } from 'next/navigation';
 
 // 서버 컴포넌트 - DB에서 루틴 데이터를 직접 불러옴
 export default async function HomePage() {
   const user = await getCurrentUser();
 
+  // 미인증 시 빈 루틴 목록 전달 (AuthGuard가 리다이렉트 처리)
   if (!user) {
-    redirect('/login');
+    return <HomeContent routines={[]} />;
   }
 
   // 해당 사용자의 루틴만 조회

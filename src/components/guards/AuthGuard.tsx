@@ -18,7 +18,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
   useEffect(() => {
     if (!isLoggedIn) {
-      router.replace('/login');
+      router.replace('/login?expired=true');
     }
   }, [isLoggedIn, router]);
 

@@ -1,22 +1,37 @@
 'use client';
 
 import { Input } from '@/components/ui/input';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { LoginRequest } from '@/app/api/auth/login/client/service/service';
 import { useLogin } from '@/app/api/auth/login/client/hooks/useLogin';
+import { useLogout } from '@/app/api/auth/logout/client/hooks/useLogout';
 import { useAppDispatch } from '@/redux/hooks';
-import { login as loginAction } from '@/redux/slices/userSlice';
+import { login as loginAction, logout as logoutAction } from '@/redux/slices/userSlice';
 
 export default function LoginPage() {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [showError, setShowError] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
   const { mutate: loginMutate } = useLogin();
+  const { mutate: logoutMutate } = useLogout();
+
+  // 세션 만료로 리다이렉트된 경우 쿠키 정리
+  useEffect(() => {
+    if (searchParams.get('expired') === 'true') {
+      logoutMutate(undefined, {
+        onSettled: () => {
+          dispatch(logoutAction());
+          router.replace('/login');
+        },
+      });
+    }
+  }, [searchParams, dispatch, router, logoutMutate]);
   const handleId = (value: string) => {
     setId(value);
   };
