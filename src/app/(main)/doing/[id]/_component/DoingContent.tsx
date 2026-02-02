@@ -198,10 +198,10 @@ export function DoingContent({ exercise }: DoingContentProps) {
     <div className="relative flex min-h-0 flex-1 flex-col">
       {/* 헤더: 루틴 이름 + 운동 추가 버튼 + 경과 시간 */}
       <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex w-full items-center justify-between gap-3">
           <h1 className="text-xl font-bold text-white">{exercise.name}</h1>
           <Button
-            variant="outline"
+            variant="destructive"
             size="sm"
             onClick={() => setIsSheetOpen(true)}
             className="text-xs"

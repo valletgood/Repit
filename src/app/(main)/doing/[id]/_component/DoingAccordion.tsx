@@ -127,7 +127,7 @@ function ExerciseItem({ item, isOpen, onAddSet, onDeleteSet, onUpdateSet }: Exer
         <div className="w-full">
           {/* 상단: 제목 + 세트추가 + 원형 토글버튼 */}
           <div className="flex items-center justify-between gap-3">
-            <h3 className="flex-1 text-xl leading-tight font-extrabold text-white">{item.name}</h3>
+            <h3 className="flex-1 text-lg leading-tight font-extrabold text-white">{item.name}</h3>
 
             <div className="flex items-center gap-3">
               <p
@@ -149,7 +149,7 @@ function ExerciseItem({ item, isOpen, onAddSet, onDeleteSet, onUpdateSet }: Exer
           </div>
 
           {/* 요약 라인 */}
-          <p className="mt-4 text-lg text-[#BEBEBE]">{summary}</p>
+          <p className="text-md mt-4 text-[#BEBEBE]">{summary}</p>
         </div>
       </AccordionTrigger>
 
@@ -175,7 +175,7 @@ function ExerciseItem({ item, isOpen, onAddSet, onDeleteSet, onUpdateSet }: Exer
                       onUpdateSet(item.routineExerciseId, set.id, 'duration', seconds);
                     }}
                   />
-                  <span className="text-lg font-semibold text-white">분</span>
+                  <span className="text-md font-semibold text-white">분</span>
 
                   {/* 거리 */}
                   <Input
@@ -189,7 +189,7 @@ function ExerciseItem({ item, isOpen, onAddSet, onDeleteSet, onUpdateSet }: Exer
                       onUpdateSet(item.routineExerciseId, set.id, 'distance', val);
                     }}
                   />
-                  <span className="text-lg font-semibold text-white">km</span>
+                  <span className="text-md font-semibold text-white">km</span>
                 </>
               ) : (
                 <>
@@ -204,7 +204,7 @@ function ExerciseItem({ item, isOpen, onAddSet, onDeleteSet, onUpdateSet }: Exer
                       onUpdateSet(item.routineExerciseId, set.id, 'weight', val);
                     }}
                   />
-                  <span className="text-lg font-semibold text-white">KG</span>
+                  <span className="text-md font-semibold text-white">KG</span>
 
                   {/* 횟수 */}
                   <Input
@@ -217,7 +217,7 @@ function ExerciseItem({ item, isOpen, onAddSet, onDeleteSet, onUpdateSet }: Exer
                       onUpdateSet(item.routineExerciseId, set.id, 'reps', val);
                     }}
                   />
-                  <span className="text-lg font-semibold text-white">회</span>
+                  <span className="text-md font-semibold text-white">회</span>
                 </>
               )}
 
