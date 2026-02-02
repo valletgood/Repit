@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
-import { routineExerciseSets, workoutSessions, routines } from '@/db/schema';
+import { routineExerciseSets, routineExercises, workoutSessions, routines } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
 type SaveRoutineSetsBody = {
@@ -8,6 +8,8 @@ type SaveRoutineSetsBody = {
   duration: number;
   exercises: {
     routineExerciseId: string;
+    exerciseId: string;
+    order: number;
     sets: {
       id: string;
       setNumber: number;
@@ -45,17 +47,33 @@ export async function PUT(req: Request) {
 
     // 각 운동별로 세트 처리
     for (const exercise of body.exercises) {
-      const { routineExerciseId, sets } = exercise;
+      const { routineExerciseId, exerciseId, order, sets } = exercise;
 
-      // 1) 기존 세트 모두 삭제
-      await db
-        .delete(routineExerciseSets)
-        .where(eq(routineExerciseSets.routineExerciseId, routineExerciseId));
+      let actualRoutineExerciseId = routineExerciseId;
 
-      // 2) 새 세트 삽입 (setNumber 재정렬)
+      // 새 운동인 경우 (temp-로 시작하는 ID)
+      if (routineExerciseId.startsWith('temp-')) {
+        const [newRoutineExercise] = await db
+          .insert(routineExercises)
+          .values({
+            routineId: body.routineId,
+            exerciseId,
+            order,
+          })
+          .returning({ id: routineExercises.id });
+
+        actualRoutineExerciseId = newRoutineExercise.id;
+      } else {
+        // 기존 운동인 경우 세트 삭제
+        await db
+          .delete(routineExerciseSets)
+          .where(eq(routineExerciseSets.routineExerciseId, routineExerciseId));
+      }
+
+      // 새 세트 삽입 (setNumber 재정렬)
       if (sets.length > 0) {
         const newSets = sets.map((s, idx) => ({
-          routineExerciseId,
+          routineExerciseId: actualRoutineExerciseId,
           setNumber: idx + 1,
           weight: s.weight,
           reps: s.reps,

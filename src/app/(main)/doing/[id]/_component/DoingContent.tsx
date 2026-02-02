@@ -6,11 +6,14 @@ import {
   RoutineExerciseSetDTO,
 } from '@/app/(main)/doing/[id]/page';
 import { DoingAccordion } from '@/app/(main)/doing/[id]/_component/DoingAccordion';
+import { ExerciseSelectSheet } from '@/app/(main)/doing/[id]/_component/ExerciseSelectSheet';
 import { Button } from '@/components/ui/button';
 import { useSaveRoutineSets } from '@/app/api/main/doing/client/hooks/useSaveRoutineSets';
+import { useGetExercises } from '@/app/api/main/exercises/client/hooks/useGetExercises';
 import { useRouter } from 'next/navigation';
 import { useModal } from '@/hooks/useModal';
 import { toast } from 'sonner';
+import type { Exercise } from '@/db/schema';
 
 interface DoingContentProps {
   exercise: RoutineWithExercises;
@@ -19,18 +22,25 @@ interface DoingContentProps {
 export function DoingContent({ exercise }: DoingContentProps) {
   const [exercises, setExercises] = useState<RoutineExerciseDTO[]>(exercise.exercises);
   const { mutate: saveRoutineSets, isPending } = useSaveRoutineSets();
+  const { data: exerciseData } = useGetExercises();
   const router = useRouter();
   const modal = useModal();
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-  const startTimeRef = useRef<number>(Date.now());
+  const [isStarted, setIsStarted] = useState(false);
+  const startTimeRef = useRef<number | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   useEffect(() => {
+    if (!isStarted) return;
+
     const interval = setInterval(() => {
-      setElapsedSeconds(Math.floor((Date.now() - startTimeRef.current) / 1000));
+      if (startTimeRef.current) {
+        setElapsedSeconds(Math.floor((Date.now() - startTimeRef.current) / 1000));
+      }
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isStarted]);
 
   const formatTime = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
@@ -40,6 +50,14 @@ export function DoingContent({ exercise }: DoingContentProps) {
       return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     }
     return `${m}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const onStart = () => {
+    modal.confirm('운동을 시작하시겠습니까?', () => {
+      startTimeRef.current = Date.now();
+      setIsStarted(true);
+      toast.message('운동을 시작합니다.');
+    });
   };
 
   const onAddSet = useCallback((routineExerciseId: string) => {
@@ -84,25 +102,63 @@ export function DoingContent({ exercise }: DoingContentProps) {
 
   const onSave = () => {
     modal.confirm('운동을 완료하시겠습니까?', () => {
-      const duration = Math.floor((Date.now() - startTimeRef.current) / 1000);
-      saveRoutineSets(
-        { routineId: exercise.id, exercises, duration },
-        {
-          onSuccess: () => {
-            toast.message('운동을 완료했습니다.');
-            router.push('/');
-          },
-        }
-      );
+      const duration = startTimeRef.current
+        ? Math.floor((Date.now() - startTimeRef.current) / 1000)
+        : 0;
+      const payload = {
+        routineId: exercise.id,
+        duration,
+        exercises: exercises.map((ex) => ({
+          routineExerciseId: ex.routineExerciseId,
+          exerciseId: ex.exerciseId,
+          order: ex.order,
+          sets: ex.sets,
+        })),
+      };
+      saveRoutineSets(payload, {
+        onSuccess: () => {
+          toast.message('운동을 완료했습니다.');
+          router.push('/');
+        },
+      });
     });
   };
+
+  const onAddExercises = useCallback(
+    (selectedExercises: Exercise[]) => {
+      const existingIds = exercises.map((e) => e.exerciseId);
+      const duplicates = selectedExercises.filter((ex) => existingIds.includes(ex.excerciseId));
+
+      if (duplicates.length > 0) {
+        toast.error(`이미 추가된 운동이 있습니다: ${duplicates.map((d) => d.name).join(', ')}`);
+        return;
+      }
+
+      const maxOrder = Math.max(0, ...exercises.map((e) => e.order));
+      const newExercises: RoutineExerciseDTO[] = selectedExercises.map((ex, idx) => ({
+        routineExerciseId: `temp-exercise-${Date.now()}-${idx}`,
+        order: maxOrder + idx + 1,
+        exerciseId: ex.excerciseId,
+        name: ex.name,
+        mainCategory: ex.mainCategory,
+        subCategory: ex.subCategory,
+        equipment: ex.equipment,
+        sets: [{ id: `temp-set-${Date.now()}-${idx}`, setNumber: 1, weight: 0, reps: 10 }],
+      }));
+      setExercises((prev) => [...prev, ...newExercises]);
+      toast.message(`${selectedExercises.length}개 운동이 추가되었습니다.`);
+    },
+    [exercises]
+  );
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
       {/* 헤더: 루틴 이름 + 경과 시간 */}
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-bold text-white">{exercise.name}</h1>
-        <span className="text-lg font-semibold text-[#E31B23]">{formatTime(elapsedSeconds)}</span>
+        {isStarted && (
+          <span className="text-lg font-semibold text-[#E31B23]">{formatTime(elapsedSeconds)}</span>
+        )}
       </div>
 
       {/* 스크롤 영역 */}
@@ -116,21 +172,39 @@ export function DoingContent({ exercise }: DoingContentProps) {
       </div>
 
       {/* 하단 고정 버튼바 */}
-      <div className="sticky right-0 bottom-0 left-0 z-20 bg-[#1A1A1A] pt-3 pb-14">
+      <div className="fixed right-0 bottom-20 left-1/2 w-1/2 -translate-x-1/2 px-4 py-4">
         <div className="flex items-center justify-center gap-4 px-4">
-          {/*<Button variant="secondary" onClick={onSave} disabled={isPending} className="w-40">*/}
-          {/*  임시 저장*/}
-          {/*</Button>*/}
-
-          <Button variant="active" onClick={onSave} disabled={isPending} className="w-40">
-            운동 완료
+          <Button variant="secondary" onClick={() => setIsSheetOpen(true)} className="w-40">
+            운동 추가
           </Button>
+          {isStarted ? (
+            <Button variant="active" onClick={onSave} disabled={isPending} className="w-40">
+              운동 완료
+            </Button>
+          ) : (
+            <Button variant="active" onClick={onStart} className="w-40">
+              운동 시작
+            </Button>
+          )}
         </div>
 
         {/* 안전영역(iOS) 대응 */}
         <div className="h-[env(safe-area-inset-bottom)]" />
       </div>
       <modal.Modal />
+
+      {/* 운동 추가 바텀시트 */}
+      {isSheetOpen && exerciseData && (
+        <ExerciseSelectSheet
+          isOpen={isSheetOpen}
+          onClose={() => setIsSheetOpen(false)}
+          exercises={exerciseData.exercises}
+          categories={exerciseData.categories}
+          equipments={exerciseData.equipments}
+          onSelect={onAddExercises}
+          existingExerciseIds={exercises.map((e) => e.exerciseId)}
+        />
+      )}
     </div>
   );
 }

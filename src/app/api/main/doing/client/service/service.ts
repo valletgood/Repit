@@ -5,6 +5,8 @@ export interface SaveRoutineSetsRequest {
   duration: number;
   exercises: {
     routineExerciseId: string;
+    exerciseId: string;
+    order: number;
     sets: {
       id: string;
       setNumber: number;
