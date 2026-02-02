@@ -138,7 +138,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="flex min-h-screen w-full flex-col items-center bg-[#1A1A1A] px-8 pt-4">
+    <main className="flex h-[100svh] w-full flex-col items-center bg-[#1A1A1A] px-8 pt-4">
       {/* 콘텐츠 */}
       <div className="flex w-full flex-col items-center">
         {/* 로고 영역 */}
