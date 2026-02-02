@@ -4,7 +4,6 @@ import './globals.css';
 import QueryProvider from '@/components/providers/QueryProvider';
 import ReduxProvider from '@/redux/ReduxProvider';
 import { Toaster } from '@/components/ui/sonner';
-import PwaInstallBanner from '@/components/PwaInstallBanner';
 
 const spaceGrotesk = Space_Grotesk({
   variable: '--font-sans',
