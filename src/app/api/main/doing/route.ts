@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
-import { routineExerciseSets, routineExercises, workoutSessions, routines } from '@/db/schema';
+import { routineExerciseSets, routineExercises, workoutSessions, workoutSets, routines } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
 type SaveRoutineSetsBody = {
@@ -42,12 +42,14 @@ export async function PUT(req: Request) {
     }
 
     // 운동 세션 저장 (saveSession이 true일 때만)
+    let sessionId: string | null = null;
     if (body.saveSession) {
-      await db.insert(workoutSessions).values({
+      const [session] = await db.insert(workoutSessions).values({
         userId: routine.userId,
         date: new Date(),
         duration: body.duration ?? 0,
-      });
+      }).returning({ id: workoutSessions.id });
+      sessionId = session.id;
     }
 
     // 각 운동별로 세트 처리
@@ -87,6 +89,21 @@ export async function PUT(req: Request) {
         }));
 
         await db.insert(routineExerciseSets).values(newSets);
+
+        // workoutSets에도 저장 (운동 기록용)
+        if (sessionId) {
+          const workoutSetData = sets.map((s, idx) => ({
+            sessionId,
+            exerciseId,
+            setNumber: idx + 1,
+            weight: s.weight,
+            reps: s.reps,
+            duration: s.duration,
+            distance: s.distance,
+          }));
+
+          await db.insert(workoutSets).values(workoutSetData);
+        }
       }
     }
 
