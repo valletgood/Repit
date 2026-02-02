@@ -88,6 +88,13 @@ export function DoingContent({ exercise }: DoingContentProps) {
     );
   }, []);
 
+  const onDeleteExercise = useCallback((routineExerciseId: string) => {
+    modal.confirm('이 운동을 삭제하시겠습니까?', () => {
+      setExercises((prev) => prev.filter((ex) => ex.routineExerciseId !== routineExerciseId));
+      toast.message('운동이 삭제되었습니다.');
+    });
+  }, [modal]);
+
   const onUpdateSet = useCallback(
     (
       routineExerciseId: string,
@@ -198,7 +205,7 @@ export function DoingContent({ exercise }: DoingContentProps) {
     <div className="relative flex min-h-0 flex-1 flex-col">
       {/* 헤더: 루틴 이름 + 운동 추가 버튼 + 경과 시간 */}
       <div className="mb-4 flex items-center justify-between">
-        <div className="flex w-full items-center justify-between gap-3">
+        <div className="flex w-full items-center gap-3">
           <h1 className="text-xl font-bold text-white">{exercise.name}</h1>
           <Button
             variant="destructive"
@@ -220,6 +227,7 @@ export function DoingContent({ exercise }: DoingContentProps) {
           exercises={exercises}
           onAddSet={onAddSet}
           onDeleteSet={onDeleteSet}
+          onDeleteExercise={onDeleteExercise}
           onUpdateSet={onUpdateSet}
         />
       </div>

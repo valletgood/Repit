@@ -18,6 +18,7 @@ interface DoingAccordionProps {
   exercises: RoutineExerciseDTO[];
   onAddSet: (routineExerciseId: string) => void;
   onDeleteSet: (routineExerciseId: string, setId: string) => void;
+  onDeleteExercise: (routineExerciseId: string) => void;
   onUpdateSet: (
     routineExerciseId: string,
     setId: string,
@@ -30,6 +31,7 @@ export function DoingAccordion({
   exercises,
   onAddSet,
   onDeleteSet,
+  onDeleteExercise,
   onUpdateSet,
 }: DoingAccordionProps) {
   const defaultValue = exercises?.[0]?.routineExerciseId;
@@ -53,6 +55,7 @@ export function DoingAccordion({
               isOpen={openedId === item.routineExerciseId}
               onAddSet={onAddSet}
               onDeleteSet={onDeleteSet}
+              onDeleteExercise={onDeleteExercise}
               onUpdateSet={onUpdateSet}
             />
           ))}
@@ -67,6 +70,7 @@ interface ExerciseItemProps {
   isOpen: boolean;
   onAddSet: (routineExerciseId: string) => void;
   onDeleteSet: (routineExerciseId: string, setId: string) => void;
+  onDeleteExercise: (routineExerciseId: string) => void;
   onUpdateSet: (
     routineExerciseId: string,
     setId: string,
@@ -75,7 +79,14 @@ interface ExerciseItemProps {
   ) => void;
 }
 
-function ExerciseItem({ item, isOpen, onAddSet, onDeleteSet, onUpdateSet }: ExerciseItemProps) {
+function ExerciseItem({
+  item,
+  isOpen,
+  onAddSet,
+  onDeleteSet,
+  onDeleteExercise,
+  onUpdateSet,
+}: ExerciseItemProps) {
   const isCardio = item.equipment === '유산소';
 
   const get1Rm = (weight: number, reps: number) => {
@@ -114,6 +125,12 @@ function ExerciseItem({ item, isOpen, onAddSet, onDeleteSet, onUpdateSet }: Exer
     e.stopPropagation();
     onAddSet(item.routineExerciseId);
   };
+
+  const handleDeleteExercise = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onDeleteExercise(item.routineExerciseId);
+  };
   return (
     <AccordionItem value={item.routineExerciseId} className="rounded-2xl bg-[#2A2A2A] p-4">
       {/* Trigger: 기본 화살표 숨기고 커스텀 헤더 */}
@@ -129,13 +146,20 @@ function ExerciseItem({ item, isOpen, onAddSet, onDeleteSet, onUpdateSet }: Exer
           <div className="flex items-center justify-between gap-3">
             <h3 className="flex-1 text-lg leading-tight font-extrabold text-white">{item.name}</h3>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <p
                 className="bg-secondary text-secondary-foreground hover:bg-secondary/80 active:bg-secondary/70 rounded-2xl px-4 py-2 text-center"
                 onClick={handleAddSet}
               >
                 세트 추가
               </p>
+
+              <span
+                className="flex h-9 w-9 items-center justify-center text-[#888888] hover:bg-[#3A3A3A] hover:text-[#E31B23]"
+                onClick={handleDeleteExercise}
+              >
+                <Trash2 className="h-5 w-5" />
+              </span>
 
               <div className="flex items-center justify-center rounded-full">
                 <ChevronDown
