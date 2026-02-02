@@ -2,45 +2,168 @@
 alwaysApply: true
 ---
 
-# Project Rules
-- Framework: Next.js 14+ (App Router)
-- Language: TypeScript (Strict mode)
-- Styling: Tailwind CSS
-- Database: PostgreSQL with Drizzle ORM
-- API Pattern: Next.js Server Actions (No API Routes)
-- State Management: Zustand
-- Components: Use Functional Components, shadcn/ui pattern
+# Project Rules - Repit (운동 기록 앱)
 
-# Code Style
-- Use `interface` for type definitions.
-- Always use 'use server' at the top of Server Action files.
-- Use `lucide-react` for icons.
-- Prefer `async/await` over `.then`.
-- When writing DB queries, strictly follow the schema defined in `src/db/schema.ts`.
+## Tech Stack
+- **Framework**: Next.js 15+ (App Router)
+- **Language**: TypeScript (Strict mode)
+- **Styling**: Tailwind CSS
+- **UI Components**: shadcn/ui
+- **Database**: PostgreSQL (Supabase) with Drizzle ORM
+- **State Management**: Redux Toolkit (redux-persist)
+- **Data Fetching**: TanStack Query (React Query)
+- **HTTP Client**: Axios
+- **Icons**: lucide-react
+- **Authentication**: Custom Token (Access Token + Refresh Token in HttpOnly Cookies)
 
-# Database Schema Rules
-- **BEFORE** modifying `src/db/schema.ts`, ALWAYS read `docs/schemas.md` first to understand current table structures.
-- **AFTER** modifying `src/db/schema.ts`, ALWAYS update `docs/schemas.md` to reflect the changes.
-- Schema documentation (`docs/schemas.md`) must stay in sync with the actual schema file.
+## Code Style
+- Use `interface` for type definitions
+- Use `lucide-react` for icons
+- Prefer `async/await` over `.then`
+- When writing DB queries, strictly follow the schema defined in `src/db/schema.ts`
 
-# Project Structure (Updated)
+## Project Structure
+
+```
 /src
   /app
-    /(auth)               # Public Layout (No Sidebar)
-      /login
-      /register
-    /(dashboard)          # Protected Layout (Has Sidebar & Header)
-      /layout.tsx         # ★ Sidebar & Header Implementation here
-      /page.tsx           # Main Home (Overall Summary)
-      /projects           # Project Management List
-        /page.tsx         # List of projects
-        /[id]             # Specific Project Detail
-          /board          # ★ Kanban Board is here (/projects/1/board)
-          /settings       # Project Settings
-      /statistics         # Statistics & Analytics Page
-  /components
-    /layout
-      - sidebar.tsx       # Common Sidebar
-      - header.tsx        # Common Header
-    /charts               # For Statistics
-    /kanban               # For Board
+    /(auth)/                    # 인증 레이아웃 (로그인/회원가입)
+      /login/page.tsx
+      /register/page.tsx
+    /(main)/                    # 메인 레이아웃 (하단 네비게이션)
+      /layout.tsx               # BottomNav 포함
+      /page.tsx                 # 홈 (루틴 목록)
+      /_components/             # 페이지 전용 컴포넌트
+      /record/                  # 운동 기록 (캘린더)
+      /chart/                   # 통계 차트
+      /mypage/                  # 마이페이지
+      /doing/[routineId]/       # 운동 진행
+      /reg-routine/             # 루틴 등록
+    /api/                       # API Routes
+      /auth/                    # 인증 API
+        /login/
+        /logout/
+        /register/
+        /check-id/
+      /main/                    # 메인 기능 API
+        /record/
+        /chart/
+        /doing/
+        /routines/
+        /exercises/
+        /reg-routine/
+  /components/
+    /ui/                        # shadcn/ui 컴포넌트
+    /chart/                     # 차트 컴포넌트
+    /navigation/                # 네비게이션 컴포넌트
+    /guards/                    # 인증 가드
+    /providers/                 # Provider 컴포넌트
+  /db/
+    /index.ts                   # Drizzle DB 인스턴스
+    /schema.ts                  # 테이블 스키마 정의
+  /lib/
+    /axios.ts                   # Axios 인스턴스
+    /auth.ts                    # 인증 유틸리티 (토큰 관리)
+    /utils.ts                   # 공통 유틸리티
+  /redux/
+    /configStore.ts             # Redux Store 설정
+    /hooks.ts                   # useAppSelector, useAppDispatch
+    /slices/                    # Redux Slices
+  /hooks/                       # Custom Hooks
+  /types/                       # 공통 타입 정의
+```
+
+## API Route 구조 규칙
+
+각 API 엔드포인트는 다음 구조를 따름:
+
+```
+/api/{domain}/{feature}/
+  route.ts                      # API Route Handler (GET, POST, etc.)
+  /client/
+    /service/
+      service.ts                # API 호출 함수 (axiosInstance 사용)
+    /hooks/
+      use{Feature}.ts           # TanStack Query Hook (useQuery, useMutation)
+```
+
+### 예시: 로그인 API
+```
+/api/auth/login/
+  route.ts                      # POST /api/auth/login
+  /client/
+    /service/
+      service.ts                # login(payload) 함수
+    /hooks/
+      useLogin.ts               # useLogin() - useMutation
+```
+
+### Service 파일 패턴
+```typescript
+import axiosInstance from '@/lib/axios';
+
+export interface LoginRequest {
+  userId: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  message: string;
+  user: { ... };
+}
+
+export const login = async (payload: LoginRequest): Promise<LoginResponse> => {
+  const response = await axiosInstance.post('/api/auth/login', payload);
+  return response.data;
+};
+```
+
+### Hook 파일 패턴 (Mutation)
+```typescript
+import { useMutation } from '@tanstack/react-query';
+import { login, LoginRequest } from '../service/service';
+
+export const useLogin = () => {
+  return useMutation({
+    mutationFn: (payload: LoginRequest) => login(payload),
+  });
+};
+```
+
+### Hook 파일 패턴 (Query)
+```typescript
+import { useQuery } from '@tanstack/react-query';
+import { getRecord } from '../service/service';
+
+export const useGetRecord = (userId: string, date: string) => {
+  return useQuery({
+    queryKey: ['record', userId, date],
+    queryFn: () => getRecord(userId, date),
+    enabled: !!userId && !!date,
+  });
+};
+```
+
+## 인증 규칙
+
+- 서버 컴포넌트에서 인증 확인: `getCurrentUser()` from `@/lib/auth`
+- 미인증 시 `/login?expired=true`로 리다이렉트
+- 로그인 페이지에서 `expired=true` 감지 시 쿠키 정리 (useLogout 호출)
+- Access Token: 15분 만료, Refresh Token: 7일 만료
+
+## 컴포넌트 규칙
+
+- 페이지 전용 컴포넌트: `/(main)/_components/` 또는 각 페이지 폴더 내 `_components/`
+- 공통 UI 컴포넌트: `/components/ui/`
+- 클라이언트 컴포넌트는 파일 최상단에 `'use client'` 선언
+
+## 데이터베이스 테이블
+
+- `users` - 사용자
+- `exercises` - 운동 종류
+- `workout_sessions` - 운동 세션 (하루 운동)
+- `workout_sets` - 운동 세트 기록
+- `routines` - 사용자 루틴
+- `routine_exercises` - 루틴에 포함된 운동
+- `routine_exercise_sets` - 루틴 운동의 세트 설정
+- `refresh_tokens` - 리프레시 토큰
