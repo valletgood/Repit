@@ -9,6 +9,7 @@ import {
   useGetMonthlyRecord,
 } from '@/app/api/main/record/client/hooks/useGetRecord';
 import type { WorkoutSetWithExercise } from '@/app/api/main/record/client/service/service';
+import { format } from 'date-fns';
 
 interface ExerciseSummary {
   exerciseId: string;
@@ -25,11 +26,10 @@ interface ExerciseSummary {
 export default function RecordPage() {
   const user = useAppSelector((state) => state.user);
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [viewMonth, setViewMonth] = useState<Date>(new Date());
 
-  const dateStr = date ? date.toISOString().split('T')[0] : '';
-  const monthStr = date
-    ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
-    : '';
+  const dateStr = date ? format(date, 'yyyy-MM-dd') : '';
+  const monthStr = format(viewMonth, 'yyyy-MM');
 
   const { data: dailyData, isLoading: isDailyLoading } = useGetDailyRecord(
     user.id as string,
@@ -66,13 +66,12 @@ export default function RecordPage() {
     }
 
     return Array.from(grouped.values());
-  }, [dailyData?.sets]);
-  console.log('dailyData:', dailyData);
-  console.log('exerciseSummaries:', exerciseSummaries);
+  }, [dailyData]);
+
   const totalDuration = useMemo(() => {
     if (!dailyData?.sessions) return 0;
     return dailyData.sessions.reduce((sum, s) => sum + s.duration, 0);
-  }, [dailyData?.sessions]);
+  }, [dailyData]);
 
   const formatDuration = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
@@ -84,26 +83,26 @@ export default function RecordPage() {
   const workoutDates = useMemo(() => {
     if (!monthlyData?.workoutDates) return [];
     return monthlyData.workoutDates.map((d) => new Date(d));
-  }, [monthlyData?.workoutDates]);
+  }, [monthlyData]);
 
   const userName = user.name || 'OOO';
-  const currentMonth = date ? date.getMonth() + 1 : new Date().getMonth() + 1;
+  const currentMonth = viewMonth ? viewMonth.getMonth() + 1 : new Date().getMonth() + 1;
   const workoutCount = monthlyData?.workoutCount ?? 0;
 
   return (
-    <div className="flex h-[100svh] flex-1 flex-col gap-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
       {/* 상단: 달력 */}
       <div className="flex justify-center">
         <Calendar
-          mode="single"
           selected={date}
           onSelect={setDate}
-          className="rounded-xl bg-[#2A2A2A]"
+          onMonthChange={setViewMonth}
+          className="rounded-xl"
           modifiers={{
             workout: workoutDates,
           }}
           modifiersClassNames={{
-            workout: 'bg-[#E31B23]/20 text-[#E31B23] font-bold',
+            workout: 'workout-day',
           }}
         />
       </div>
@@ -117,7 +116,7 @@ export default function RecordPage() {
       </div>
 
       {/* 하단: 선택된 날의 운동 정보 카드 */}
-      <div className="scrollbar-hide flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-2">
+      <div className="scrollbar-hide flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto rounded-xl">
         {isDailyLoading && (
           <div className="rounded-xl bg-[#2A2A2A] p-6 text-center">
             <p className="text-[#888888]">로딩 중...</p>
@@ -150,14 +149,14 @@ export default function RecordPage() {
 
               return (
                 <Card key={exercise.exerciseId} className="border-0 bg-[#2A2A2A]">
-                  <CardContent className="p-4">
+                  <CardContent>
                     <div className="mb-2 flex items-center justify-between">
-                      <h3 className="font-bold text-white">{exercise.exerciseName}</h3>
+                      <h3 className="text-lg font-bold text-white">{exercise.exerciseName}</h3>
                       <span className="text-sm text-[#888888]">{exercise.mainCategory}</span>
                     </div>
 
                     {isCardio ? (
-                      <div className="flex gap-4 text-sm">
+                      <div className="text-md flex gap-4">
                         <div>
                           <span className="text-[#888888]">시간: </span>
                           <span className="text-white">
@@ -170,7 +169,7 @@ export default function RecordPage() {
                         </div>
                       </div>
                     ) : (
-                      <div className="flex gap-4 text-sm">
+                      <div className="text-md flex gap-4">
                         <div>
                           <span className="text-[#888888]">세트: </span>
                           <span className="text-white">{exercise.sets.length}세트</span>
@@ -193,7 +192,7 @@ export default function RecordPage() {
                       {exercise.sets.map((set) => (
                         <div
                           key={set.id}
-                          className="flex items-center gap-2 text-xs text-[#BEBEBE]"
+                          className="flex items-center gap-2 text-sm text-[#BEBEBE]"
                         >
                           <span className="w-12">{set.setNumber}세트</span>
                           {isCardio ? (
