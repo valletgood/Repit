@@ -225,7 +225,7 @@ export function DoingContent({ exercise }: DoingContentProps) {
       </div>
 
       {/* 하단 고정 버튼바 */}
-      <div className="shrink-0 px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+      <div className="shrink-0 px-4 py-4">
         <div className="flex items-center justify-center gap-4">
           <Button
             variant="secondary"

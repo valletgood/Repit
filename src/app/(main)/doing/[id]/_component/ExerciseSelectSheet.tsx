@@ -207,7 +207,7 @@ export function ExerciseSelectSheet({
 
         {/* 하단 확인 버튼 */}
         {selectedExercises.length > 0 && (
-          <div className="shrink-0 px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+          <div className="shrink-0 px-4 py-4">
             <Button
               onClick={handleConfirm}
               variant="active"

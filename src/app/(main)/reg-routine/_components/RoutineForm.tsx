@@ -206,7 +206,7 @@ export function RoutineForm({ exercises, categories, equipments }: RoutineFormPr
 
       {/* 하단 고정 버튼 */}
       {selectedExercises.length > 0 && (
-        <div className="shrink-0 px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+        <div className="shrink-0 px-4 py-4">
           <Button
             onClick={handleOpenModal}
             variant="active"
