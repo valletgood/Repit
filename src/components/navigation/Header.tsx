@@ -10,7 +10,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="flex items-center justify-between px-4 py-4">
+      <header className="flex items-center justify-between px-4 py-4 pt-[calc(1rem+env(safe-area-inset-top))]">
         <button
           onClick={() => setIsMenuOpen(true)}
           className="flex h-10 w-10 items-center justify-center rounded-full text-white hover:bg-[#2A2A2A]"
