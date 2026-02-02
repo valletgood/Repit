@@ -1,7 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronDown, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Accordion,
@@ -12,17 +12,27 @@ import {
 
 import type { RoutineExerciseDTO } from '@/app/(main)/doing/[id]/page';
 import { clsx } from 'clsx';
-import { AddSetRequest } from '@/app/api/main/doing/client/service/service';
-import { useAddSet } from '@/app/api/main/doing/client/hooks/useAddSet';
-import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 
 interface DoingAccordionProps {
-  exercise: RoutineExerciseDTO[];
+  exercises: RoutineExerciseDTO[];
+  onAddSet: (routineExerciseId: string) => void;
+  onDeleteSet: (routineExerciseId: string, setId: string) => void;
+  onUpdateSet: (
+    routineExerciseId: string,
+    setId: string,
+    field: 'weight' | 'reps',
+    value: number | null
+  ) => void;
 }
 
-export function DoingAccordion({ exercise }: DoingAccordionProps) {
-  const defaultValue = exercise?.[0]?.routineExerciseId;
+export function DoingAccordion({
+  exercises,
+  onAddSet,
+  onDeleteSet,
+  onUpdateSet,
+}: DoingAccordionProps) {
+  const defaultValue = exercises?.[0]?.routineExerciseId;
   const [openedId, setOpenedId] = useState(defaultValue);
 
   return (
@@ -36,11 +46,14 @@ export function DoingAccordion({ exercise }: DoingAccordionProps) {
           defaultValue={defaultValue}
           className="flex flex-col gap-3"
         >
-          {exercise.map((item) => (
+          {exercises.map((item) => (
             <ExerciseItem
               key={item.routineExerciseId}
               item={item}
               isOpen={openedId === item.routineExerciseId}
+              onAddSet={onAddSet}
+              onDeleteSet={onDeleteSet}
+              onUpdateSet={onUpdateSet}
             />
           ))}
         </Accordion>
@@ -49,47 +62,38 @@ export function DoingAccordion({ exercise }: DoingAccordionProps) {
   );
 }
 
-function ExerciseItem({ item, isOpen }: { item: RoutineExerciseDTO; isOpen: boolean }) {
-  const { mutate: addSet } = useAddSet();
-  const router = useRouter();
+interface ExerciseItemProps {
+  item: RoutineExerciseDTO;
+  isOpen: boolean;
+  onAddSet: (routineExerciseId: string) => void;
+  onDeleteSet: (routineExerciseId: string, setId: string) => void;
+  onUpdateSet: (
+    routineExerciseId: string,
+    setId: string,
+    field: 'weight' | 'reps',
+    value: number | null
+  ) => void;
+}
 
+function ExerciseItem({ item, isOpen, onAddSet, onDeleteSet, onUpdateSet }: ExerciseItemProps) {
   const get1Rm = (weight: number, reps: number) => {
     return weight * (1 + reps / 30);
   };
 
-  const summary = useMemo(() => {
-    const sets = item.sets ?? [];
+  const sets = item.sets ?? [];
+  const setCount = sets.length;
+  const totalReps = sets.reduce((sum, s) => sum + (s.reps ?? 0), 0);
+  const oneRmValues = sets
+    .filter((s) => s.weight && s.reps && s.reps > 0 && s.reps <= 10)
+    .map((s) => get1Rm(s.weight!, s.reps!));
+  const oneRm = oneRmValues.length > 0 ? Math.round(Math.max(...oneRmValues)) : null;
+  const summary = `${totalReps}회 / ${setCount}세트 / 1RM: ${oneRm ?? '-'}`;
 
-    const setCount = sets.length;
-    const totalReps = sets.reduce((sum, s) => sum + (s.reps ?? 0), 0);
-
-    // ✅ 세트별 1RM 계산 → 가장 큰 값 사용
-    const oneRmValues = sets
-      .filter((s) => s.weight && s.reps && s.reps > 0 && s.reps <= 10)
-      .map((s) => get1Rm(s.weight!, s.reps!));
-
-    const oneRm = oneRmValues.length > 0 ? Math.round(Math.max(...oneRmValues)) : null;
-
-    return `${totalReps}회 / ${setCount}세트 / 1RM: ${oneRm ?? '-'}`;
-  }, [item.sets]);
-
-  const onAddSet = (e: React.MouseEvent) => {
-    e.preventDefault(); // 아코디언 토글 방지
+  const handleAddSet = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
-    // TODO: 세트 추가 로직 연결 (상태/서버 액션)
-    const payload: AddSetRequest = {
-      reps: 10,
-      routineExerciseId: item.routineExerciseId,
-      weight: 0,
-    };
-    addSet(payload, {
-      onSuccess: () => {
-        router.refresh();
-      },
-    });
-    console.log('add set:', item.routineExerciseId);
+    onAddSet(item.routineExerciseId);
   };
-
   return (
     <AccordionItem value={item.routineExerciseId} className="rounded-2xl bg-[#2A2A2A] p-4">
       {/* Trigger: 기본 화살표 숨기고 커스텀 헤더 */}
@@ -106,9 +110,12 @@ function ExerciseItem({ item, isOpen }: { item: RoutineExerciseDTO; isOpen: bool
             <h3 className="flex-1 text-xl leading-tight font-extrabold text-white">{item.name}</h3>
 
             <div className="flex items-center gap-3">
-              <Button variant="secondary" onClick={onAddSet}>
+              <p
+                className="bg-secondary text-secondary-foreground hover:bg-secondary/80 active:bg-secondary/70 rounded-2xl px-4 py-2 text-center"
+                onClick={handleAddSet}
+              >
                 세트 추가
-              </Button>
+              </p>
 
               <div className="flex items-center justify-center rounded-full">
                 <ChevronDown
@@ -129,18 +136,46 @@ function ExerciseItem({ item, isOpen }: { item: RoutineExerciseDTO; isOpen: bool
       <AccordionContent className="pt-6 pb-0">
         {/* 세트 입력 그리드 */}
         <div className="flex flex-col gap-6">
-          {(item.sets ?? []).map((set) => (
+          {sets.map((set) => (
             <div
-              key={`${item.routineExerciseId}-${set.setNumber}`}
-              className="grid grid-cols-[1fr_auto_1fr_auto] items-center gap-x-6 gap-y-3"
+              key={`${item.routineExerciseId}-${set.id}`}
+              className="grid grid-cols-[1fr_auto_1fr_auto_auto] items-center gap-x-6 gap-y-3"
             >
               {/* 무게 */}
-              <Input variant="auth" defaultValue={set.weight ?? ''} placeholder="0" />
+              <Input
+                variant="auth"
+                type="number"
+                defaultValue={set.weight ?? ''}
+                placeholder="0"
+                onBlur={(e) => {
+                  const val = e.target.value === '' ? null : Number(e.target.value);
+                  onUpdateSet(item.routineExerciseId, set.id, 'weight', val);
+                }}
+              />
               <span className="text-lg font-semibold text-white">KG</span>
 
               {/* 횟수 */}
-              <Input variant="auth" defaultValue={set.reps ?? ''} placeholder="0" />
+              <Input
+                variant="auth"
+                type="number"
+                defaultValue={set.reps ?? ''}
+                placeholder="0"
+                onBlur={(e) => {
+                  const val = e.target.value === '' ? null : Number(e.target.value);
+                  onUpdateSet(item.routineExerciseId, set.id, 'reps', val);
+                }}
+              />
               <span className="text-lg font-semibold text-white">회</span>
+
+              {/* 삭제 */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10 text-[#888888] hover:text-[#E31B23]"
+                onClick={() => onDeleteSet(item.routineExerciseId, set.id)}
+              >
+                <Trash2 className="h-5 w-5" />
+              </Button>
             </div>
           ))}
 

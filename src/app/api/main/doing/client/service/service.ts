@@ -1,12 +1,19 @@
 import axiosInstance from '@/lib/axios';
 
-export interface AddSetRequest {
-  routineExerciseId: string;
-  weight?: number | null;
-  reps?: number | null;
+export interface SaveRoutineSetsRequest {
+  routineId: string;
+  exercises: {
+    routineExerciseId: string;
+    sets: {
+      id: string;
+      setNumber: number;
+      weight: number | null;
+      reps: number | null;
+    }[];
+  }[];
 }
 
-export const addSet = async (payload: AddSetRequest) => {
-  const response = await axiosInstance.post('/api/main/doing', payload);
+export const saveRoutineSets = async (payload: SaveRoutineSetsRequest) => {
+  const response = await axiosInstance.put('/api/main/doing', payload);
   return response.data;
 };

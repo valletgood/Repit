@@ -8,6 +8,7 @@ interface DoingPageProps {
 }
 
 export interface RoutineExerciseSetDTO {
+  id: string;
   setNumber: number;
   weight: number | null;
   reps: number | null;
@@ -77,6 +78,7 @@ export default async function DoingPage({ params }: DoingPageProps) {
 
   const setRows = await db
     .select({
+      id: routineExerciseSets.id,
       routineExerciseId: routineExerciseSets.routineExerciseId,
       setNumber: routineExerciseSets.setNumber,
       weight: routineExerciseSets.weight,
@@ -90,7 +92,7 @@ export default async function DoingPage({ params }: DoingPageProps) {
   const setsByRoutineExerciseId = new Map<string, RoutineExerciseSetDTO[]>();
   for (const s of setRows) {
     const arr = setsByRoutineExerciseId.get(s.routineExerciseId) ?? [];
-    arr.push({ setNumber: s.setNumber, weight: s.weight ?? null, reps: s.reps ?? null });
+    arr.push({ id: s.id, setNumber: s.setNumber, weight: s.weight ?? null, reps: s.reps ?? null });
     setsByRoutineExerciseId.set(s.routineExerciseId, arr);
   }
 
