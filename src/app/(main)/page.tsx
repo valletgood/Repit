@@ -14,10 +14,7 @@ export default async function HomePage() {
   }
 
   // 해당 사용자의 루틴만 조회
-  const routineList = await db
-    .select()
-    .from(routines)
-    .where(eq(routines.userId, user.id));
+  const routineList = await db.select().from(routines).where(eq(routines.userId, user.id));
 
   // 각 루틴에 대해 운동 정보 조회
   const routinesWithExercises = await Promise.all(

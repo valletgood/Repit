@@ -27,19 +27,46 @@ export function DoingContent({ exercise }: DoingContentProps) {
   const modal = useModal();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-  const [isStarted, setIsStarted] = useState(false);
-  const startTimeRef = useRef<number | null>(null);
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const WORKOUT_SESSION_KEY = 'workout_session';
 
-  useEffect(() => {
-    if (!isStarted) return;
-
-    const interval = setInterval(() => {
-      if (startTimeRef.current) {
-        setElapsedSeconds(Math.floor((Date.now() - startTimeRef.current) / 1000));
+  const getInitialSession = (routineId: string) => {
+    if (typeof window === 'undefined') return null;
+    const savedSession = localStorage.getItem(WORKOUT_SESSION_KEY);
+    if (savedSession) {
+      try {
+        const session = JSON.parse(savedSession);
+        if (session.routineId === routineId && session.startTime) {
+          return session as { routineId: string; startTime: number };
+        }
+      } catch (_e) {
+        localStorage.removeItem(WORKOUT_SESSION_KEY);
       }
-    }, 1000);
-    return () => clearInterval(interval);
+    }
+    return null;
+  };
+
+  const [isStarted, setIsStarted] = useState(() => {
+    const session = getInitialSession(exercise.id);
+    return session !== null;
+  });
+  const startTimeRef = useRef<number | null>(
+    getInitialSession(exercise.id)?.startTime ?? null
+  );
+  const [elapsedSeconds, setElapsedSeconds] = useState(() => {
+    const session = getInitialSession(exercise.id);
+    return session ? Math.floor((Date.now() - session.startTime) / 1000) : 0;
+  });
+
+  // 타이머 업데이트
+  useEffect(() => {
+    if (isStarted) {
+      const interval = setInterval(() => {
+        if (startTimeRef.current) {
+          setElapsedSeconds(Math.floor((Date.now() - startTimeRef.current) / 1000));
+        }
+      }, 1000);
+      return () => clearInterval(interval);
+    }
   }, [isStarted]);
 
   const formatTime = (seconds: number) => {
@@ -54,8 +81,14 @@ export function DoingContent({ exercise }: DoingContentProps) {
 
   const onStart = () => {
     modal.confirm('운동을 시작하시겠습니까?', () => {
-      startTimeRef.current = Date.now();
+      const now = Date.now();
+      startTimeRef.current = now;
       setIsStarted(true);
+      // localStorage에 세션 저장
+      localStorage.setItem(
+        WORKOUT_SESSION_KEY,
+        JSON.stringify({ routineId: exercise.id, startTime: now })
+      );
       toast.message('운동을 시작합니다.');
     });
   };
@@ -88,12 +121,15 @@ export function DoingContent({ exercise }: DoingContentProps) {
     );
   }, []);
 
-  const onDeleteExercise = useCallback((routineExerciseId: string) => {
-    modal.confirm('이 운동을 삭제하시겠습니까?', () => {
-      setExercises((prev) => prev.filter((ex) => ex.routineExerciseId !== routineExerciseId));
-      toast.message('운동이 삭제되었습니다.');
-    });
-  }, [modal]);
+  const onDeleteExercise = useCallback(
+    (routineExerciseId: string) => {
+      modal.confirm('이 운동을 삭제하시겠습니까?', () => {
+        setExercises((prev) => prev.filter((ex) => ex.routineExerciseId !== routineExerciseId));
+        toast.message('운동이 삭제되었습니다.');
+      });
+    },
+    [modal]
+  );
 
   const onUpdateSet = useCallback(
     (
@@ -133,6 +169,8 @@ export function DoingContent({ exercise }: DoingContentProps) {
       };
       saveRoutineSets(payload, {
         onSuccess: () => {
+          // localStorage 세션 삭제
+          localStorage.removeItem(WORKOUT_SESSION_KEY);
           toast.message('운동을 완료했습니다.');
           router.push('/');
         },

@@ -23,9 +23,6 @@ export const metadata: Metadata = {
   manifest: '/manifest.webmanifest',
   applicationName: 'Repit',
 
-  // ✅ 모바일 주소창/상단바 색(안드로이드 크롬 등)
-  themeColor: '#0B0F19',
-
   // ✅ iOS 홈화면 설치 시 “앱처럼”
   appleWebApp: {
     capable: true,
