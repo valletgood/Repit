@@ -126,6 +126,12 @@ export default function LoginPage() {
                   inputSize="lg"
                   value={password}
                   onChange={(e) => handlePassword(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleLogin();
+                    }
+                  }}
                   placeholder="비밀번호를 입력해 주세요."
                   className="bg-input text-foreground placeholder:text-muted-foreground pl-12"
                 />
@@ -144,7 +150,7 @@ export default function LoginPage() {
             <div className="mt-10 flex flex-col gap-3">
               {/* 로그인 버튼 */}
               <Button
-                type="submit"
+                type="button"
                 size="auth"
                 variant="authPrimary"
                 className="w-full"

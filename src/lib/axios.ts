@@ -1,4 +1,6 @@
 import axios from 'axios';
+import { store } from '@/redux/configStore';
+import { logout as logoutAction } from '@/redux/slices/userSlice';
 
 const axiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || '',
@@ -12,10 +14,6 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config) => {
     // TODO: 토큰이 있으면 헤더에 추가
-    // const token = localStorage.getItem('token');
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
     return config;
   },
   (error) => {
@@ -34,8 +32,15 @@ axiosInstance.interceptors.response.use(
       const { status } = error.response;
 
       if (status === 401) {
-        // TODO: 인증 만료 처리 (로그아웃, 로그인 페이지 리다이렉트 등)
         console.error('인증이 만료되었습니다.');
+        
+        axiosInstance.post('/api/auth/logout').finally(() => {
+          store.dispatch(logoutAction());
+          
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login?expired=true';
+          }
+        });
       }
 
       if (status === 500) {

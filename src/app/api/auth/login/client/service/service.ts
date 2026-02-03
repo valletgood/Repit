@@ -1,4 +1,4 @@
-import axiosInstance from '@/lib/axios';
+import axios from 'axios';
 
 export interface LoginRequest {
   userId: string;
@@ -18,6 +18,6 @@ export interface LoginResponse {
 }
 
 export const login = async (payload: LoginRequest): Promise<LoginResponse> => {
-  const response = await axiosInstance.post('/api/auth/login', payload);
+  const response = await axios.post('/api/auth/login', payload);
   return response.data;
 };
