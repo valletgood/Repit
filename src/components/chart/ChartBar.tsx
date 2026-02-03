@@ -5,6 +5,7 @@ interface ChartBarProps {
     name: string;
     value: number;
   }[];
+  height?: number;
 }
 
 const getBarColor = (value: number): string => {
@@ -13,9 +14,9 @@ const getBarColor = (value: number): string => {
   return '#A60320';
 };
 
-export default function ChartBar({ data }: ChartBarProps) {
+export default function ChartBar({ data, height = 120 }: ChartBarProps) {
   return (
-    <ResponsiveContainer width="100%" height={120}>
+    <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} barCategoryGap="20%">
         <XAxis
           dataKey="name"

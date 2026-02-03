@@ -32,6 +32,8 @@ const buttonVariants = cva(
           'rounded-md border border-[#F04444] bg-[#8B0F14] text-white hover:bg-[#A01118] active:bg-[#6E0B10]',
         active:
           'rounded-md border border-[#F04444] bg-[#8B0F14] text-white hover:bg-[#A01118] active:bg-[#6E0B10]',
+        dropdown:
+          'rounded-lg border border-[#3A3A3A] bg-[#2A2A2A] text-white font-medium hover:bg-[#3A3A3A] active:bg-[#1F1F1F]',
       },
       size: {
         default: 'h-9 px-4 py-2 has-[>svg]:px-3',
