@@ -5,6 +5,7 @@ export interface UserState {
   userId: string | null;
   name: string | null;
   gender: string | null;
+  birthDate: string | null;
   lastLoginAt: string | null;
   isLoggedIn: boolean;
 }
@@ -14,6 +15,7 @@ const initialState: UserState = {
   userId: null,
   name: null,
   gender: null,
+  birthDate: null,
   lastLoginAt: null,
   isLoggedIn: false,
 };
@@ -23,6 +25,7 @@ export interface LoginPayload {
   userId: string;
   name: string;
   gender: string;
+  birthDate: string;
   lastLoginAt: string;
 }
 
@@ -35,6 +38,7 @@ const userSlice = createSlice({
       state.userId = action.payload.userId;
       state.name = action.payload.name;
       state.gender = action.payload.gender;
+      state.birthDate = action.payload.birthDate;
       state.lastLoginAt = action.payload.lastLoginAt;
       state.isLoggedIn = true;
     },

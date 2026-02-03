@@ -36,6 +36,12 @@ export default function MyPage() {
             {user.gender === 'male' ? '남성' : user.gender === 'female' ? '여성' : '-'}
           </span>
         </div>
+        <div className="flex items-center justify-between">
+          <span className="text-[#888888]">생년월일</span>
+          <span className="font-medium text-white">
+            <span className="font-medium text-white">{user.birthDate || '-'}</span>
+          </span>
+        </div>
       </div>
 
       <Button variant="destructive" onClick={handleLogout} className="w-full">

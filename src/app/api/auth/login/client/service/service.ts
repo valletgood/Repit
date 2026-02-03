@@ -12,6 +12,7 @@ export interface LoginResponse {
     userId: string;
     name: string;
     gender: string;
+    birthDate: string;
     createdAt: string;
     updatedAt: string;
   };

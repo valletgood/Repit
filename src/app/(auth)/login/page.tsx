@@ -58,6 +58,7 @@ export default function LoginPage() {
             userId: response.user.userId,
             name: response.user.name,
             gender: response.user.gender,
+            birthDate: response.user.birthDate,
             lastLoginAt: new Date().toISOString(),
           })
         );

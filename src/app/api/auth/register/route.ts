@@ -6,10 +6,10 @@ import { eq } from 'drizzle-orm';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { userId, name, password, gender } = body;
+    const { userId, name, password, gender, birthDate } = body;
 
     // 유효성 검사
-    if (!userId || !name || !password || !gender) {
+    if (!userId || !name || !password || !gender || !birthDate) {
       return NextResponse.json({ error: '모든 필드를 입력해주세요.' }, { status: 400 });
     }
 
@@ -28,12 +28,14 @@ export async function POST(request: NextRequest) {
         name,
         password, // TODO: bcrypt 등으로 해시 처리
         gender,
+        birthDate,
       })
       .returning({
         id: users.id,
         userId: users.userId,
         name: users.name,
         gender: users.gender,
+        birthDate: users.birthDate,
         createdAt: users.createdAt,
       });
 

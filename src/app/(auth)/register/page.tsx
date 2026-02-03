@@ -18,6 +18,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [gender, setGender] = useState('');
+  const [birthDate, setBirthDate] = useState('');
   const [error, setError] = useState('');
   const [idError, setIdError] = useState('');
   const [isIdAvailable, setIsIdAvailable] = useState<boolean | null>(null);
@@ -72,6 +73,43 @@ export default function RegisterPage() {
     setGender(value);
   };
 
+  const handleBirthDate = (value: string) => {
+    const numericValue = value.replace(/[^0-9]/g, '');
+    let formatted = numericValue;
+
+    if (numericValue.length >= 4) {
+      formatted = numericValue.slice(0, 4);
+      if (numericValue.length >= 6) {
+        formatted += '-' + numericValue.slice(4, 6);
+        if (numericValue.length >= 8) {
+          formatted += '-' + numericValue.slice(6, 8);
+        } else if (numericValue.length > 6) {
+          formatted += '-' + numericValue.slice(6);
+        }
+      } else if (numericValue.length > 4) {
+        formatted += '-' + numericValue.slice(4);
+      }
+    }
+
+    setBirthDate(formatted);
+  };
+
+  const validateBirthDate = (date: string): boolean => {
+    const dateRegex = /^(\d{4})-(\d{2})-(\d{2})$/;
+    if (!dateRegex.test(date)) return false;
+
+    const [year, month, day] = date.split('-').map(Number);
+    const birthDate = new Date(year, month - 1, day);
+    const today = new Date();
+
+    if (year < 1900 || year > today.getFullYear()) return false;
+    if (month < 1 || month > 12) return false;
+    if (day < 1 || day > 31) return false;
+    if (birthDate > today) return false;
+
+    return true;
+  };
+
   // 비밀번호 유효성 검사: 8~20글자, 숫자/영어/특수문자 중 2가지 이상 포함
   const validatePassword = (pwd: string): boolean => {
     if (pwd.length < 8 || pwd.length > 20) return false;
@@ -91,6 +129,8 @@ export default function RegisterPage() {
       password &&
       passwordConfirm &&
       gender &&
+      birthDate &&
+      validateBirthDate(birthDate) &&
       password === passwordConfirm &&
       isIdAvailable === true
     );
@@ -118,6 +158,7 @@ export default function RegisterPage() {
           name,
           password,
           gender,
+          birthDate,
         },
         {
           onSuccess: (response) => {
@@ -138,7 +179,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="flex h-[100svh] w-full flex-col items-center bg-[#1A1A1A] px-8 pt-4 pt-[calc(1rem+env(safe-area-inset-top))]">
+    <main className="flex h-[100svh] w-full flex-col items-center bg-[#1A1A1A] px-8 pt-[calc(1rem+env(safe-area-inset-top))]">
       {/* 로고 영역 - 고정 */}
       <div className="relative aspect-[3/1] w-full max-w-[280px] shrink-0 overflow-hidden">
         <Image src="/images/logo.svg" alt="Repit 로고" fill className="object-contain" priority />
@@ -263,6 +304,35 @@ export default function RegisterPage() {
               <div className="flex items-center gap-2">
                 <Image src="/images/icon_warning.svg" alt="Error" width={16} height={16} />
                 <p className="text-sm font-medium text-[#CE0000]">비밀번호가 일치하지 않습니다.</p>
+              </div>
+            )}
+          </div>
+
+          {/* 생년월일 입력 */}
+          <div className="flex flex-col gap-2">
+            <label htmlFor="birthDate" className="text-foreground-muted text-sm font-medium">
+              생년월일
+            </label>
+            <div className="relative">
+              <Input
+                id="birthDate"
+                type="text"
+                inputMode="numeric"
+                variant="auth"
+                inputSize="lg"
+                value={birthDate}
+                onChange={(e) => handleBirthDate(e.target.value)}
+                placeholder="YYYY-MM-DD"
+                maxLength={10}
+                className="bg-input text-foreground placeholder:text-muted-foreground"
+              />
+            </div>
+            {birthDate && !validateBirthDate(birthDate) && (
+              <div className="flex items-center gap-2">
+                <Image src="/images/icon_warning.svg" alt="Error" width={16} height={16} />
+                <p className="text-sm font-medium text-[#CE0000]">
+                  올바른 생년월일을 입력해주세요. (YYYY-MM-DD)
+                </p>
               </div>
             )}
           </div>
