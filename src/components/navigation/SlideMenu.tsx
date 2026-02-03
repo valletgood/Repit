@@ -2,10 +2,14 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import { logout as logoutAction } from '@/redux/slices/userSlice';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { useLogout } from '@/app/api/auth/logout/client/hooks/useLogout';
 
 interface NavItem {
   href: string;
@@ -43,6 +47,18 @@ interface SlideMenuProps {
 
 export default function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const { mutate: logoutMutate } = useLogout();
+
+  const handleLogout = () => {
+    logoutMutate(undefined, {
+      onSettled: () => {
+        dispatch(logoutAction());
+        router.push('/login');
+      },
+    });
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -69,12 +85,12 @@ export default function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
       {/* 슬라이드 메뉴 */}
       <div
         className={cn(
-          'fixed top-0 left-0 z-50 h-full w-64 bg-[#1A1A1A] shadow-xl transition-transform duration-300 ease-in-out',
+          'fixed top-0 left-0 z-50 flex h-full w-64 flex-col bg-[#1A1A1A] shadow-xl transition-transform duration-300 ease-in-out',
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         {/* 헤더 */}
-        <div className="flex items-center justify-between p-4 border-b border-[#3A3A3A]">
+        <div className="flex items-center justify-between border-b border-[#3A3A3A] p-4">
           <Image src="/images/logo.svg" alt="REPIT" width={100} height={32} />
           <button
             onClick={onClose}
@@ -85,27 +101,32 @@ export default function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
         </div>
 
         {/* 메뉴 목록 */}
-        <nav className="flex flex-col p-4 gap-2">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
+        <nav className="flex flex-1 flex-col justify-between gap-2 p-4">
+          <div className="w-full">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href;
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onClose}
-                className={cn(
-                  'flex items-center gap-4 px-4 py-3 rounded-xl transition-colors',
-                  isActive
-                    ? 'bg-[#E31B23] text-white'
-                    : 'text-[#888888] hover:bg-[#2A2A2A] hover:text-white'
-                )}
-              >
-                {item.icon}
-                <span className="text-base font-medium">{item.label}</span>
-              </Link>
-            );
-          })}
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onClose}
+                  className={cn(
+                    'flex items-center gap-4 rounded-xl px-4 py-3 transition-colors',
+                    isActive
+                      ? 'bg-[#E31B23] text-white'
+                      : 'text-[#888888] hover:bg-[#2A2A2A] hover:text-white'
+                  )}
+                >
+                  {item.icon}
+                  <span className="text-base font-medium">{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+          <Button variant="destructive" onClick={handleLogout} className="w-full p-4">
+            로그아웃
+          </Button>
         </nav>
       </div>
     </>
