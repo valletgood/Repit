@@ -1,7 +1,6 @@
 'use client';
 
-import Image from 'next/image';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { useAppSelector } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
 import ChartBar from '@/components/chart/ChartBar';
@@ -10,6 +9,9 @@ import type { Routine } from '@/db/schema';
 import { useGetWeeklyChart } from '@/app/api/main/chart/client/hooks/useGetWeeklyChart';
 import { useEffect, useState } from 'react';
 import { useModal } from '@/hooks/useModal';
+import { useDeleteRoutine, useUpdateRoutine } from '@/app/api/main/routine/client/hooks/useRoutine';
+import { RoutineEditModal } from '@/components/ui/modal';
+import { toast } from 'sonner';
 
 interface RoutineWithExercises extends Routine {
   exerciseCount: number;
@@ -28,6 +30,13 @@ export function HomeContent({ routines }: HomeContentProps) {
     totalDay: 0,
     totalDuration: '',
   });
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingRoutine, setEditingRoutine] = useState<RoutineWithExercises | null>(null);
+
+  const { mutate: deleteRoutine, isPending: isDeleting } = useDeleteRoutine();
+  const { mutate: updateRoutine, isPending: isUpdating } = useUpdateRoutine();
+
   const userName = user.name || 'OOO';
   const router = useRouter();
   const today = new Date();
@@ -49,6 +58,52 @@ export function HomeContent({ routines }: HomeContentProps) {
 
   const moveToDoing = (routineId: string) => {
     router.push(`/doing/${routineId}`);
+  };
+
+  const handleMenuToggle = (e: React.MouseEvent, routineId: string) => {
+    e.stopPropagation();
+    setOpenMenuId(openMenuId === routineId ? null : routineId);
+  };
+
+  const handleEdit = (e: React.MouseEvent, routine: RoutineWithExercises) => {
+    e.stopPropagation();
+    setOpenMenuId(null);
+    setEditingRoutine(routine);
+    setEditModalOpen(true);
+  };
+
+  const handleDelete = (e: React.MouseEvent, routine: RoutineWithExercises) => {
+    e.stopPropagation();
+    setOpenMenuId(null);
+    modal.confirm(`"${routine.name}" 루틴을 삭제하시겠습니까?`, () => {
+      deleteRoutine(routine.id, {
+        onSuccess: () => {
+          toast.success('루틴이 삭제되었습니다.');
+          router.refresh();
+        },
+        onError: () => {
+          toast.error('루틴 삭제에 실패했습니다.');
+        },
+      });
+    });
+  };
+
+  const handleUpdateRoutineName = (name: string) => {
+    if (!editingRoutine) return;
+    updateRoutine(
+      { routineId: editingRoutine.id, name },
+      {
+        onSuccess: () => {
+          toast.success('루틴명이 수정되었습니다.');
+          setEditModalOpen(false);
+          setEditingRoutine(null);
+          router.refresh();
+        },
+        onError: () => {
+          toast.error('루틴명 수정에 실패했습니다.');
+        },
+      }
+    );
   };
 
   useEffect(() => {
@@ -135,19 +190,47 @@ export function HomeContent({ routines }: HomeContentProps) {
             {routines.map((routine) => (
               <div
                 key={routine.id}
-                className="cursor-pointer rounded-xl bg-[#2A2A2A] p-4 transition-colors hover:bg-[#333333]"
+                className="relative cursor-pointer rounded-xl bg-[#2A2A2A] p-4 transition-colors hover:bg-[#333333]"
                 onClick={() => moveToDoing(routine.id)}
               >
                 <div className="flex items-center justify-between">
-                  <div>
+                  <div className="flex-1 pr-2">
                     <p className="font-bold text-white">{routine.name}</p>
                     <p className="text-sm text-[#888888]">
                       {routine.exerciseNames.slice(0, 3).join(', ')}
                       {routine.exerciseCount > 3 && ` 외 ${routine.exerciseCount - 3}개`}
                     </p>
                   </div>
-                  <ChevronRight className="h-5 w-5 text-[#888888]" />
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => handleMenuToggle(e, routine.id)}
+                      className="flex h-8 w-8 items-center justify-center rounded-full text-[#888888] hover:bg-[#3A3A3A] hover:text-white"
+                    >
+                      <MoreVertical className="h-5 w-5" />
+                    </button>
+                    <ChevronRight className="h-5 w-5 text-[#888888]" />
+                  </div>
                 </div>
+
+                {/* 드롭다운 메뉴 */}
+                {openMenuId === routine.id && (
+                  <div className="absolute right-12 top-12 z-10 min-w-[120px] rounded-lg bg-[#3A3A3A] py-1 shadow-lg">
+                    <button
+                      onClick={(e) => handleEdit(e, routine)}
+                      className="flex w-full items-center gap-2 px-4 py-2 text-sm text-white hover:bg-[#4A4A4A]"
+                    >
+                      <Pencil className="h-4 w-4" />
+                      이름 수정
+                    </button>
+                    <button
+                      onClick={(e) => handleDelete(e, routine)}
+                      className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[#E31B23] hover:bg-[#4A4A4A]"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      삭제
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -160,6 +243,17 @@ export function HomeContent({ routines }: HomeContentProps) {
         )}
       </section>
       <modal.Modal />
+
+      {/* 루틴 이름 수정 모달 */}
+      <RoutineEditModal
+        isOpen={editModalOpen}
+        onClose={() => {
+          setEditModalOpen(false);
+          setEditingRoutine(null);
+        }}
+        onSave={handleUpdateRoutineName}
+        currentName={editingRoutine?.name ?? ''}
+      />
     </div>
   );
 }

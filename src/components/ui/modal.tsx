@@ -127,3 +127,63 @@ export function RoutineNameModal({
     </Modal>
   );
 }
+
+// 루틴 이름 수정 모달
+interface RoutineEditModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (name: string) => void;
+  currentName: string;
+}
+
+export function RoutineEditModal({
+  isOpen,
+  onClose,
+  onSave,
+  currentName,
+}: RoutineEditModalProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      inputRef.current.value = currentName;
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isOpen, currentName]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const name = inputRef.current?.value.trim();
+    if (name) {
+      onSave(name);
+    }
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="루틴 이름 수정">
+      <form onSubmit={handleSubmit}>
+        <Input
+          ref={inputRef}
+          variant="auth"
+          placeholder="루틴 이름을 입력하세요"
+          className="mb-4 w-full"
+        />
+
+        <div className="flex gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            className="flex-1 rounded-full border-[#3A3A3A] bg-[#3A3A3A] py-3 text-white hover:bg-[#4A4A4A]"
+          >
+            취소
+          </Button>
+          <Button type="submit" variant="active" className="flex-1 rounded-full py-3 text-white">
+            저장
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
