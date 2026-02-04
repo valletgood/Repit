@@ -46,17 +46,15 @@ export default function ChartPage() {
 
       {/* 2. 부위 별 차트 */}
       <section className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <div className="scrollbar-hide flex flex-1 flex-col gap-15 overflow-y-auto rounded-xl">
+        <div className="scrollbar-hide flex flex-1 flex-col gap-5 overflow-y-auto rounded-xl">
           <section>
-            <h2 className="mb-4 text-lg font-bold text-white">
-              부위 별 Volume
-              <ChartBar data={weeklyData ?? []} height={200} />
-            </h2>
+            <h2 className="mb-4 text-lg font-bold text-white">주간 운동 볼륨 추이</h2>
+            <ChartBar data={weeklyData ?? []} height={200} />
           </section>
 
           {/* 4. 부위 수행 차트 */}
           <section>
-            <h2 className="mb-4 text-lg font-bold text-white">부위 별 Distribution</h2>
+            <h2 className="mb-4 text-lg font-bold text-white">부위별 운동 비율</h2>
             <ChartPie data={distributionData ?? []} height={280} />
           </section>
         </div>
