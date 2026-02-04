@@ -20,6 +20,12 @@ function parseToken(token: string): TokenPayload | null {
   }
 }
 
+// 한국 시간(KST, UTC+9) 기준 날짜 생성
+function getKSTDate(date: Date = new Date()): Date {
+  const utc = date.getTime() + date.getTimezoneOffset() * 60000;
+  return new Date(utc + 9 * 60 * 60 * 1000);
+}
+
 // 1. 부위별 차트 - 최근 일주일 요일별 데이터
 export async function GET(request: NextRequest) {
   try {
@@ -44,8 +50,14 @@ export async function GET(request: NextRequest) {
     }
 
     const userId = payload.userId;
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    // KST 기준 오늘 포함 7일: 6일 전 00:00:00 ~ 오늘 23:59:59
+    const kstToday = getKSTDate();
+    const sevenDaysAgoKST = new Date(kstToday);
+    sevenDaysAgoKST.setDate(sevenDaysAgoKST.getDate() - 6);
+    sevenDaysAgoKST.setHours(0, 0, 0, 0);
+    // DB 비교를 위해 UTC로 변환
+    const sevenDaysAgo = new Date(sevenDaysAgoKST.getTime() - 9 * 60 * 60 * 1000);
 
     // 1. 부위별 주간 차트
     if (type === 'part-weekly') {
@@ -67,26 +79,28 @@ export async function GET(request: NextRequest) {
           and(
             eq(workoutSessions.userId, userId),
             eq(exercises.mainCategory, part),
-            gte(workoutSessions.date, oneWeekAgo)
+            gte(workoutSessions.date, sevenDaysAgo)
           )
         )
         .groupBy(workoutSessions.date)
         .orderBy(workoutSessions.date);
 
-      // 요일별로 데이터 정리
+      // 요일별로 데이터 정리 (KST 기준)
       const result = [];
 
       for (let i = 6; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        date.setHours(0, 0, 0, 0);
+        // KST 기준 날짜 계산
+        const targetKST = new Date(kstToday);
+        targetKST.setDate(targetKST.getDate() - i);
+        targetKST.setHours(0, 0, 0, 0);
 
-        const dateStr = date.toISOString().split('T')[0].substring(5); // MM-DD 형식
+        const dateStr = `${String(targetKST.getMonth() + 1).padStart(2, '0')}-${String(targetKST.getDate()).padStart(2, '0')}`;
 
         const dayData = weeklyData.find((d) => {
-          const dataDate = new Date(d.date);
-          dataDate.setHours(0, 0, 0, 0);
-          return dataDate.toISOString().split('T')[0] === dateStr;
+          // DB에서 가져온 UTC 시간을 KST로 변환해서 비교
+          const dataDateKST = getKSTDate(new Date(d.date));
+          const dataDateStr = `${String(dataDateKST.getMonth() + 1).padStart(2, '0')}-${String(dataDateKST.getDate()).padStart(2, '0')}`;
+          return dataDateStr === dateStr;
         });
 
         result.push({
@@ -98,27 +112,47 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ data: result }, { status: 200 });
     }
 
-    // 2. 부위별 분포 차트 (파이 차트용)
+    // 2. 부위별 분포 차트 (파이 차트용) - 운동 시간 기준, mainCategory만
     if (type === 'part-distribution') {
-      const distributionData = await db
+      // 7일간 세션별 duration과 mainCategory별 세트 수 조회
+      const sessionData = await db
         .select({
+          sessionId: workoutSessions.id,
+          sessionDuration: workoutSessions.duration,
           mainCategory: exercises.mainCategory,
-          totalSets: sql<number>`count(${workoutSets.id})`,
+          setCount: sql<number>`count(${workoutSets.id})`,
         })
         .from(workoutSessions)
         .innerJoin(workoutSets, eq(workoutSets.sessionId, workoutSessions.id))
         .innerJoin(exercises, eq(exercises.excerciseId, workoutSets.exerciseId))
-        .where(and(eq(workoutSessions.userId, userId), gte(workoutSessions.date, oneWeekAgo)))
-        .groupBy(exercises.mainCategory);
+        .where(and(eq(workoutSessions.userId, userId), gte(workoutSessions.date, sevenDaysAgo)))
+        .groupBy(workoutSessions.id, workoutSessions.duration, exercises.mainCategory);
 
-      // 전체 세트 수 계산
-      const totalSets = distributionData.reduce((sum, item) => sum + item.totalSets, 0);
+      // 세션별 총 세트 수 계산
+      const sessionTotalSets: Record<string, number> = {};
+      for (const row of sessionData) {
+        sessionTotalSets[row.sessionId] = (sessionTotalSets[row.sessionId] || 0) + row.setCount;
+      }
 
-      // 퍼센트 계산
-      const result = distributionData.map((item) => ({
-        label: item.mainCategory,
-        value: totalSets > 0 ? Math.round((item.totalSets / totalSets) * 1000) / 10 : 0,
-        count: item.totalSets,
+      // 부위별(mainCategory) 시간 배분
+      const categoryDuration: Record<string, number> = {};
+
+      for (const row of sessionData) {
+        const totalSetsInSession = sessionTotalSets[row.sessionId];
+        // 세션 duration을 세트 비율로 배분
+        const allocatedDuration = (row.setCount / totalSetsInSession) * row.sessionDuration;
+
+        categoryDuration[row.mainCategory] =
+          (categoryDuration[row.mainCategory] || 0) + allocatedDuration;
+      }
+
+      // 전체 운동 시간 계산
+      const totalDuration = Object.values(categoryDuration).reduce((sum, d) => sum + d, 0);
+
+      // 백분율 계산 및 결과 생성
+      const result = Object.entries(categoryDuration).map(([label, duration]) => ({
+        label,
+        value: totalDuration > 0 ? Math.round((duration / totalDuration) * 1000) / 10 : 0,
       }));
 
       // 퍼센트 높은 순으로 정렬
