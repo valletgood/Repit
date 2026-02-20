@@ -1,6 +1,7 @@
 'use client';
 
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import type { PieLabelRenderProps } from 'recharts';
 
 interface ChartPieProps {
   data: {
@@ -23,23 +24,16 @@ const COLORS = [
 ];
 
 // 커스텀 라벨 렌더러 - 부위와 퍼센티지 표시
-const renderCustomLabel = ({
-  cx,
-  cy,
-  midAngle,
-  innerRadius,
-  outerRadius,
-  percent,
-  name,
-}: {
-  cx: number;
-  cy: number;
-  midAngle: number;
-  innerRadius: number;
-  outerRadius: number;
-  percent: number;
-  name: string;
-}) => {
+const renderCustomLabel = (props: PieLabelRenderProps) => {
+  const { cx, cy, midAngle, outerRadius, percent, name } = props as {
+    cx: number;
+    cy: number;
+    midAngle: number;
+    outerRadius: number;
+    percent: number;
+    name: string;
+  };
+
   const RADIAN = Math.PI / 180;
   const radius = outerRadius + 25;
   const x = cx + radius * Math.cos(-midAngle * RADIAN);
