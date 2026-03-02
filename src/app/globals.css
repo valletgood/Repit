@@ -233,16 +233,37 @@ body {
     @apply border-border outline-ring/50;
   }
   html {
-    background-color: #1A1A1A;
+    background-color: #1a1a1a;
     touch-action: manipulation;
     height: 100%;
     overflow: hidden;
   }
   body {
-    background-color: #1A1A1A;
+    background-color: #1a1a1a;
     @apply text-foreground;
     height: 100%;
     overflow: hidden;
+    position: relative;
+  }
+
+  /* PC 화면에서 모바일 크기로 제한하고 정중앙 배치 */
+  @media (min-width: 429px) {
+    html {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: auto;
+    }
+    body {
+      width: 428px;
+      min-height: 100vh;
+      max-width: 428px;
+      margin: 0;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+      border-radius: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
   }
 }
 
